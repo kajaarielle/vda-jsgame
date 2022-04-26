@@ -8,6 +8,8 @@ class Scene1 extends Phaser.Scene {
     }
   
     preload() {
+      // LOAD RESOURCES
+
       // TILESET
       this.load.image(
         "tileSet",
@@ -37,13 +39,28 @@ class Scene1 extends Phaser.Scene {
       // Set variables
       this.pixelSize = 16;
       this.debugMode = true;
-      this.playerTurns = 3;
+      
       this.playerTurnsMax = 3;
-      this.playerMoveFreely = true;
+      this.playerTurns = 3;
+      this.playerTurn = true;
+      this.moveSpeed = 16;
+
+      // this.controller = new Controller(this);
     }
   
     create() {
       console.log("Printing 'phaser.this': ", this);
+
+      // Basic move button
+      this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+      this.keyUp.on("down", this.whenKeyUPPressed, this);
+      this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+      this.keyDown.on("down", this.whenKeyDOWNPressed, this);
+      this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+      this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
+      this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+      this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
+
   
       // RENDER TILEMAP
       const tileMap = this.make.tilemap({ key: "map" });
@@ -73,25 +90,13 @@ class Scene1 extends Phaser.Scene {
       // check for collisions
       this.physics.add.collider(this.player, worldLayer);
       this.physics.add.collider(this.dinosaur, worldLayer);
-  
-      this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-      this.keyW.on("down", this.whenKeyWPressed, this);
-  
-      this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-      this.keyS.on("down", this.whenKeySPressed, this);
-  
-      this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-      this.keyA.on("down", this.whenKeyAPressed, this);
-  
-      this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-      this.keyD.on("down", this.whenKeyDPressed, this);
-  
-      this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-      this.keyQ.on("down", this.whenKeyQPressed, this);
       
-      
-      
-      
+
+      // CREATE UI
+      this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
+
+
+
       if (this.debugMode) {
         this.drawGrid();
       }
@@ -100,32 +105,130 @@ class Scene1 extends Phaser.Scene {
   
     update() {
       // if i need to check for something every frame
+      
+
+      // var isUpDown = this.input.keyboard.checkDown(this.controller.keyUp)
+      // if (isUpDown) {
+      //   if (this.playerTurn && this.playerTurns != 0) {
+      //     // move
+          
+      //     this.playerTurns--;
+      //     this.setTextUI();
+      //     if (this.playerTurns == 0) {
+      //       this.endPlayerTurn();
+      //     }
+      //   }
+      // }
+
+      // var isDownDown = this.input.keyboard.checkDown(this.controller.keyDown)
+      // if (isDownDown) {
+      //   if (this.playerTurn && this.playerTurns != 0) {
+      //     // move
+      //     this.playerTurns--;
+      //     this.setTextUI();
+      //     if (this.playerTurns == 0) {
+      //       this.endPlayerTurn();
+      //     }
+      //   }
+      // }
+
+      // var isLeftDown = this.input.keyboard.checkDown(this.controller.keyLeft)
+      // if (isLeftDown) {
+      //   if (this.playerTurn && this.playerTurns != 0) {
+      //     // move
+      //     this.playerTurns--;
+      //     this.setTextUI();
+      //     if (this.playerTurns == 0) {
+      //       this.endPlayerTurn();
+      //     }
+      //   }
+      // }
+
+      // var isRightDown = this.input.keyboard.checkDown(this.controller.keyRight)
+      // if (isRightDown) {
+      //   if (this.playerTurn && this.playerTurns != 0) {
+      //     // move
+      //     this.playerTurns--;
+      //     this.setTextUI();
+      //     if (this.playerTurns == 0) {
+      //       this.endPlayerTurn();
+      //     }
+      //   }
+      // }
+
+      
     }
+    surroundingPlayerTiles() {
+      let x = this.player.x;
+      let y = this.player.y;
+
+      
+    }
+
+    setTextUI() {
+      this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
+    }
+
+    endPlayerTurn() {
+      console.log("Player turn over");
+      this.enemyTurn();
+    }
+
+    enemyTurn() {
+      var enemyTurnDone = false;
+      // loop every enemy array and make them run their turn
+      // after all enemies are done with their moves set enemyTurnDone = true;
+      enemyTurnDone = true;
+
+      if (enemyTurnDone) {
+        this.resetPlayerTurn();
+      }
+    }
+
+    resetPlayerTurn() {
+      this.playerTurn = true;
+      this.playerTurns = this.playerTurnsMax
+      this.setTextUI();
+    }
+
+
   
-    whenKeyWPressed() {
-      if (this.playerMoveFreely) {
-        //this.character.y = this.character.y - this.pixelSize;
-        this.player.y = this.player.y - this.pixelSize;
+    whenKeyUPPressed() {
+      if (this.playerTurn && this.playerTurns != 0) {
+        // move player to target at set speed (px/s)
+        let target = this.player.x + 1;
+        this.physics.moveToObject(this.player, target, this.moveSpeed);
+
+        this.playerMoveFinished();
       }
     }
-    whenKeySPressed() {
-      if (this.playerMoveFreely) {
-        this.player.y = this.player.y + this.pixelSize;
+    whenKeyDOWNPressed() {
+      if (this.playerTurn && this.playerTurns != 0) {
+        // move
+        this.playerMoveFinished();
+      }
+
+    }
+    whenKeyLEFTPressed() {
+      if (this.playerTurn && this.playerTurns != 0) {
+        // move
+        this.playerMoveFinished();
+      }
+
+    }
+    whenKeyRIGHTPressed() {
+      if (this.playerTurn && this.playerTurns != 0) {
+        // move
+        this.playerMoveFinished();
       }
     }
-    whenKeyAPressed() {
-      if (this.playerMoveFreely) {
-        this.player.x = this.player.x - this.pixelSize;
-        //this.gridEngine.move("character", "left");
-        this.player.flipX = false;
-      }
-    }
-    whenKeyDPressed() {
-      if (this.playerMoveFreely) {
-        this.player.x = this.player.x + this.pixelSize;
-        //this.gridEngine.move("character", "right");
-        this.player.flipX = true;
-      }
+
+    playerMoveFinished() {
+      this.playerTurns--;
+        this.setTextUI();
+        if (this.playerTurns == 0) {
+          this.endPlayerTurn();
+        }
     }
     // if this.playerTurns != 0
     // player can do one of x
@@ -139,21 +242,21 @@ class Scene1 extends Phaser.Scene {
     // switch or while?
     // playerAction number needs to be set in update?
   
-    afterPlayerAction() {
-      this.playerTurns - 1;
-      console.log(this.playerTurns);
-      if (this.playerTurns == 0) {
-        //this.randomEnemyTurn();
-      }
-    }
+    // afterPlayerAction() {
+    //   this.playerTurns - 1;
+    //   console.log(this.playerTurns);
+    //   if (this.playerTurns == 0) {
+    //     //this.randomEnemyTurn();
+    //   }
+    // }
   
-    randomEnemyTurn() {
-      // if this.playerTurns == 0
-      // do one of x actions
+    // randomEnemyTurn() {
+    //   // if this.playerTurns == 0
+    //   // do one of x actions
   
-      this.playerTurns = this.playerTurnsMax;
-      console.log("Reset turns");
-    }
+    //   this.playerTurns = this.playerTurnsMax;
+    //   console.log("Reset turns");
+    // }
     whenKeyQPressed() {
       // do something
       var canMove = this.playerMoveFreely;
@@ -169,7 +272,7 @@ class Scene1 extends Phaser.Scene {
       var g1 = this.add.grid(128, 128, 256, 256, 16, 16, 0xff0000, 0.2);
     }
   
-    spawn(gridPlacement, offset) {
+    spawn (gridPlacement, offset) {
       const gridSize = 16;
       const place = gridPlacement * gridSize - offset;
       return place;
