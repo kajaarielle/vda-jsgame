@@ -49,6 +49,9 @@ class Scene1 extends Phaser.Scene {
     }
   
     create() {
+      this.debuggy = this.add.graphics();
+
+
       console.log("Printing 'phaser.this': ", this);
 
       // Basic move button
@@ -104,6 +107,7 @@ class Scene1 extends Phaser.Scene {
     }
   
     update() {
+      //console.log("x: " + this.player.x + ", y: " + this.player.y);
       // if i need to check for something every frame
       
 
@@ -196,8 +200,20 @@ class Scene1 extends Phaser.Scene {
     whenKeyUPPressed() {
       if (this.playerTurn && this.playerTurns != 0) {
         // move player to target at set speed (px/s)
-        let target = this.player.x + 1;
-        this.physics.moveToObject(this.player, target, this.moveSpeed);
+        var target = new Phaser.Math.Vector2();
+
+        // target.x = this.player.x;
+        // target.y = this.player.y + 1;
+        target.x = this.player.x;
+        target.y = this.player.y + 10;
+        console.log(this.player.y);
+
+        this.player.setPosition(target.x, target.y);
+
+        // while (target != this.player) {
+        //   this.physics.moveToObject(this.player, target);
+        // }
+          
 
         this.playerMoveFinished();
       }
