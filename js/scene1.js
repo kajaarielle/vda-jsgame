@@ -11,14 +11,14 @@ class Scene1 extends Phaser.Scene {
       // TILESET
       this.load.image(
         "tileSet",
-        "https://cdn.glitch.global/7cb1200c-06f4-461b-a749-328eb4b05845/tileset.png?v=1649425881115"
+        "images/tileset.png"
       );
       this.load.tilemapTiledJSON("map", "/tileMap.json");
   
       // CHARACTER
       this.load.spritesheet(
         "character",
-        "https://cdn.glitch.global/7cb1200c-06f4-461b-a749-328eb4b05845/character.png?v=1649421193547",
+        "images/character.png",
         {
           frameWidth: 32,
           frameHeight: 32,
@@ -31,7 +31,7 @@ class Scene1 extends Phaser.Scene {
       // NPCs (!!should change to spritesheet)
       this.load.image(
         "dinosaur",
-        "https://cdn.glitch.global/7cb1200c-06f4-461b-a749-328eb4b05845/dinosaur_purple.png?v=1649420761486"
+        "images/dinosaur.png"
       );
   
       // Set variables
