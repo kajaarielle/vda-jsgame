@@ -196,28 +196,21 @@ class Scene1 extends Phaser.Scene {
   }
 
   randomEnemyMove() {
+    let randomNum = this.getRandomInt(4)
 
-    const dinoMoves = {
-      meleeAttack: this.dinosaurAttackMelee(),
-      rangeAttack: this.dinosaurAttackRange(),
-      move: this.dinosaurMove(),
+    switch (randomNum) {
+      case 0:
+        this.dinosaurAttackMelee();
+        break;
+      case 1:
+        this.dinosaurAttackRange();
+        break;
+      case 2:
+        this.dinosaurMove();
+        break;
+      default:
+        break;
     }
-
-    var dinosaurMoves = []
-    let dLength;
-    // check if in range, if it is, push
-    // dLength = dinosaurMoves.push(this.dinosaurAttackMelee());
-    // dLength = dinosaurMoves.push(this.dinosaurAttackRange());
-    // dLength = dinosaurMoves.push(this.dinosaurMove());
-
-    // console.log(dinosaurMoves[1]);
-    // console.log(dinosaurMoves.length);
-
-    // //let moveLength = dinosaurMoves.length;
-    // var randomNumber = this.getRandomInt(dinosaurMoves.length);
-    // var enemyMove = dinosaurMoves[randomNumber];
-    // console.log(randomNumber);
-
 
   }
   getRandomInt(max) {
