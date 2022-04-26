@@ -147,15 +147,11 @@ class Scene1 extends Phaser.Scene {
 
   enemyTurn() {
     let enemyTurnDone = false;
-
-
-
     // "AI"
     // check for collisions / if it was able to move
 
     //let randomMove = Math.floor(Math.random() * 4);
     this.randomEnemyMove();
-
 
     // loop every enemy array and make them run their turn
     // after all enemies are done with their moves set enemyTurnDone = true;
@@ -178,6 +174,8 @@ class Scene1 extends Phaser.Scene {
     console.log("RANGE ATTACK");
   }
   dinosaurMove() {
+    // make sure the enemy actually moves somewhere (and not hindered by obstacle)
+
     let randomNumber = this.getRandomInt(5);
     console.log("MOVING");
 
@@ -199,53 +197,28 @@ class Scene1 extends Phaser.Scene {
 
   randomEnemyMove() {
 
-    const dinosaurMoves = []
+    const dinoMoves = {
+      meleeAttack: this.dinosaurAttackMelee(),
+      rangeAttack: this.dinosaurAttackRange(),
+      move: this.dinosaurMove(),
+    }
 
+    var dinosaurMoves = []
+    let dLength;
     // check if in range, if it is, push
-    dinosaurMoves.push(this.dinosaurAttackMelee());
-    dinosaurMoves.push(this.dinosaurAttackRange());
-    dinosaurMoves.push(this.dinosaurMove());
+    // dLength = dinosaurMoves.push(this.dinosaurAttackMelee());
+    // dLength = dinosaurMoves.push(this.dinosaurAttackRange());
+    // dLength = dinosaurMoves.push(this.dinosaurMove());
 
-    let moveLength = dinosaurMoves.length;
-    let randomNumber = this.getRandomInt(moveLength + 1);
-    dinosaurMoves[randomNumber];
+    // console.log(dinosaurMoves[1]);
+    // console.log(dinosaurMoves.length);
 
-
-    // Find and save current position
-
-
-    // let randomMove = 0;
+    // //let moveLength = dinosaurMoves.length;
+    // var randomNumber = this.getRandomInt(dinosaurMoves.length);
+    // var enemyMove = dinosaurMoves[randomNumber];
+    // console.log(randomNumber);
 
 
-
-    // switch(randomMove) {
-    //   case 0:
-    //     let enemyPos = new Phaser.Math.Vector2();
-    // enemyPos.x = this.dinosaur.x;
-    // enemyPos.y = this.dinosaur.y;
-
-    //   this.gridEngine.move("dinosaur", "up")
-    //     let currentPosition = new Phaser.Math.Vector2();
-    //     currentPosition.x = this.dinosaur.x;
-    //     currentPosition.y = this.dinosaur.y;
-
-    //     console.log("current x : " + currentPosition.x);
-    //     console.log(" previous y : " + enemyPos.x);
-
-    //     console.log("current x : " + currentPosition.y);
-    //     console.log(" previous y : " + enemyPos.y);
-
-    //     // while(enemyPos.x == currentPosition.x && enemyPos.y == currentPosition.y) {
-    //     //   // wait for animation?
-    //     //   //console.log("Waiting");
-    //     // }
-    //     //check if the position changed. if it didnt, try random move again.
-    //     // if(enemyPos.x == currentPosition.x && enemyPos.y == currentPosition.y) {
-    //     //   console.log("Enemy couldn't move cuz something is in the way.");
-    //     //   // this.randomEnemyMove();
-    //     // }
-    //     break;
-    // }
   }
   getRandomInt(max) {
     return Math.floor(Math.random() * max);
