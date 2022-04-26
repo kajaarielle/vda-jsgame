@@ -1,0 +1,31 @@
+@font-face {
+    font-family: HK Grotesk;
+    src: url("https://cdn.glitch.me/605e2a51-d45f-4d87-a285-9410ad350515%2FHKGrotesk-Regular.otf?v=1603136326027")
+      format("opentype");
+  }
+  
+  body {
+    font-family: HK Grotesk;
+    background: #333; /* background color outside of the game canvas */
+    padding: 0;
+    margin: 0;
+  /*   overflow: hidden; */
+    outline: 1px solid red;
+  }
+  
+  canvas {
+  /*   display block and margin centers the canvas in center */
+    display: block;
+    position: relative;
+    margin: 0 auto;
+    margin-top: 20px;
+    outline: 1px solid white;
+  /*   position: relative;
+    width: 1024px;
+    height: 1024px; */
+  }
+  div.instructions {
+    color: white;
+    text-align: center;
+    padding: 10px;
+  }
