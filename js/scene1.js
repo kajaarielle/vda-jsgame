@@ -15,10 +15,10 @@ class Scene1 extends Phaser.Scene {
       );
       this.load.tilemapTiledJSON("map", "source/tileMap.json");
   
-      // CHARACTER
+      // PLAYER CHARACTER
       this.load.spritesheet(
-        "character",
-        "images/character.png",
+        "player",
+        "images/player.png",
         {
           frameWidth: 32,
           frameHeight: 32,
@@ -57,19 +57,21 @@ class Scene1 extends Phaser.Scene {
       const worldLayer = tileMap.createLayer("World", tileset, 0, 0);
       worldLayer.setCollisionByProperty({ ge_collide: true });
       
-      this.character = this.physics.add.sprite(
+      this.player = this.physics.add.sprite(
         this.spawn(4, 8),
         this.spawn(3, 0),
-        "character"
+        "player"
       );
       this.dinosaur = this.physics.add.sprite(
         this.spawn(7, 12),
         this.spawn(7, 2),
         "dinosaur"
       );
+
+      //this.player.setCollideWorldBounds(true);
       
       // check for collisions
-      this.physics.add.collider(this.character, worldLayer);
+      this.physics.add.collider(this.player, worldLayer);
       this.physics.add.collider(this.dinosaur, worldLayer);
   
       this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -103,26 +105,26 @@ class Scene1 extends Phaser.Scene {
     whenKeyWPressed() {
       if (this.playerMoveFreely) {
         //this.character.y = this.character.y - this.pixelSize;
-        this.character.y = this.character.y - this.pixelSize;
+        this.player.y = this.player.y - this.pixelSize;
       }
     }
     whenKeySPressed() {
       if (this.playerMoveFreely) {
-        this.character.y = this.character.y + this.pixelSize;
+        this.player.y = this.player.y + this.pixelSize;
       }
     }
     whenKeyAPressed() {
       if (this.playerMoveFreely) {
-        this.character.x = this.character.x - this.pixelSize;
+        this.player.x = this.player.x - this.pixelSize;
         //this.gridEngine.move("character", "left");
-        this.character.flipX = false;
+        this.player.flipX = false;
       }
     }
     whenKeyDPressed() {
       if (this.playerMoveFreely) {
-        this.character.x = this.character.x + this.pixelSize;
+        this.player.x = this.player.x + this.pixelSize;
         //this.gridEngine.move("character", "right");
-        this.character.flipX = true;
+        this.player.flipX = true;
       }
     }
     // if this.playerTurns != 0
