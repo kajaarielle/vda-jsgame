@@ -8,6 +8,7 @@ class Scene1 extends Phaser.Scene {
   }
 
   preload() {
+    //#region LOAD
     // LOAD RESOURCES
 
     // TILESET
@@ -35,8 +36,9 @@ class Scene1 extends Phaser.Scene {
       "dinosaur",
       "images/dinosaur.png"
     );
+    //#endregion
 
-    // Set variables
+    //#region SET VARIABLES
     this.pixelSize = 16;
     this.debugMode = true;
 
@@ -48,23 +50,25 @@ class Scene1 extends Phaser.Scene {
     this.target = new Phaser.Math.Vector2();
 
     // this.controller = new Controller(this);
+    //#endregion
   }
 
   create() {
     console.log("Printing 'phaser.this': ", this);
 
+    //#region PLAYER INPUT CONTROLLER
     // Basic move button
-    this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    this.keyUp.on("down", this.whenKeyUPPressed, this);
-    this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-    this.keyDown.on("down", this.whenKeyDOWNPressed, this);
-    this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-    this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
-    this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-    this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
+    // this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    // this.keyUp.on("down", this.whenKeyUPPressed, this);
+    // this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    // this.keyDown.on("down", this.whenKeyDOWNPressed, this);
+    // this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    // this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
+    // this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+    // this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
+    //#endregion
 
-
-    // RENDER TILEMAP
+    //#region RENDER TILEMAP
     const tileMap = this.make.tilemap({ key: "map" });
     // "name of tileset in Tiled", "name of phaser tileset reference"
     const tileset = tileMap.addTilesetImage("tileset", "tileSet");
@@ -75,18 +79,37 @@ class Scene1 extends Phaser.Scene {
     const groundLayer = tileMap.createLayer("Ground", tileset, 0, 0);
     const worldLayer = tileMap.createLayer("World", tileset, 0, 0);
     worldLayer.setCollisionByProperty({ ge_collide: true });
-    
+    //#endregion
 
-    this.player = this.physics.add.sprite(
-      this.spawn(4, 8),
-      this.spawn(3, 0),
+    //#region ADD CHARACTERS AS SPRITES
+    this.playerSprite = this.add.sprite(
+      this.spawn(4, 8), // x
+      this.spawn(3, 0), // y
       "player"
     );
-    this.dinosaur = this.physics.add.sprite(
-      this.spawn(7, 12),
-      this.spawn(7, 2),
+    this.dinosaurSprite = this.add.sprite(
+      this.spawn(7, 12), // x
+      this.spawn(7, 2), // y
       "dinosaur"
     );
+    //#endregion
+    
+    //#region GRID ENGINE CONFIG
+    const gridEngineConfig = {
+      characters: [
+        {
+          id: "player",
+          sprite: this.playerSprite,
+          //walkingAnimationMapping: ,
+          startPosition: { x: 1, y: 2 },
+        },
+      ],
+    };
+
+    this.gridEngine.create(tileMap, gridEngineConfig);
+    //#endregion
+
+
 
     //this.player.setCollideWorldBounds(true);
 
@@ -94,20 +117,32 @@ class Scene1 extends Phaser.Scene {
     this.physics.add.collider(this.player, worldLayer);
     this.physics.add.collider(this.dinosaur, worldLayer);
 
-
-    // CREATE UI
+    //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
-
     this.testUI = this.add.text(0, 24, 'ATTACK');
-
-
+    //#endregion
+    
+    //#region DEBUG MODE
     if (this.debugMode) {
       this.drawGrid();
     }
-    //this.gridEngine.moveRandomly("dinosaur", 200);
+    //#endregion
   }
 
   update() {
+    const cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown) {
+      this.gridEngine.move("player", "left");
+    } else if (cursors.right.isDown) {
+      this.gridEngine.move("player", "right");
+    } else if (cursors.up.isDown) {
+      this.gridEngine.move("player", "up");
+    } else if (cursors.down.isDown) {
+      this.gridEngine.move("player", "down");
+    }
+  
+
+    //#region TEST PLAYER MOVEMENT
     // var distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.target.x, this.target.y);
 
     // if (this.player.body.speed > 0) {
@@ -173,6 +208,7 @@ class Scene1 extends Phaser.Scene {
     //     }
     //   }
     // }
+    //#endregion
 
 
   }
@@ -195,9 +231,6 @@ class Scene1 extends Phaser.Scene {
     else if (visible == false) {
       this.setThisUI.visible = false;
     }
-  }
-  getGameObjectByName(name) {
-    return this.name;
   }
 
   endPlayerTurn() {
@@ -222,37 +255,39 @@ class Scene1 extends Phaser.Scene {
     this.setTextUI();
   }
 
-  whenKeyUPPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      // move player to target at set speed (px/s)
-      this.target.x = this.player.x;
-      this.physics.moveTo(this.player, this.target.x, this.player.y, this.moveSpeed);
+  //#region OLD CONTROLLER FUNCTIONS
+  // whenKeyUPPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     // move player to target at set speed (px/s)
+  //     this.target.x = this.player.x;
+  //     this.physics.moveTo(this.player, this.target.x, this.player.y, this.moveSpeed);
 
-      this.playerMoveFinished();
-    }
-  }
-  whenKeyDOWNPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      // move
-      this.playerMoveFinished();
-    }
+  //     this.playerMoveFinished();
+  //   }
+  // }
+  // whenKeyDOWNPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     // move
+  //     this.playerMoveFinished();
+  //   }
 
-  }
-  whenKeyLEFTPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      // move
-      this.visibilityUI(this.testUI, false);
+  // }
+  // whenKeyLEFTPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     // move
+  //     this.visibilityUI(this.testUI, false);
 
-      this.playerMoveFinished();
-    }
+  //     this.playerMoveFinished();
+  //   }
 
-  }
-  whenKeyRIGHTPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      // move
-      this.playerMoveFinished();
-    }
-  }
+  // }
+  // whenKeyRIGHTPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     // move
+  //     this.playerMoveFinished();
+  //   }
+  // }
+  //#endregion
 
   playerMoveFinished() {
     this.playerTurns--;
@@ -261,6 +296,8 @@ class Scene1 extends Phaser.Scene {
       this.endPlayerTurn();
     }
   }
+
+
   // if this.playerTurns != 0
   // player can do one of x
   // when done x, this.playerTurns -- (minus icrement)

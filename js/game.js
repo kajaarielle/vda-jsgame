@@ -13,6 +13,15 @@ var config = {
         gravity: { y: 0 }, // no gravity
       },
     },
+    plugins: {
+      scene: [
+        {
+          key: "gridEngine",
+          plugin: GridEngine,
+          mapping: "gridEngine",
+        },
+      ],
+    },
   };
   
   var game = new Phaser.Game(config);
