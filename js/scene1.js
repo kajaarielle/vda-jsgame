@@ -46,6 +46,7 @@ class Scene1 extends Phaser.Scene {
     this.playerTurns = 3;
     this.playerTurn = true;
     this.moveSpeed = 16;
+    this.playerHealth = 10;
 
     this.target = new Phaser.Math.Vector2();
 
@@ -66,6 +67,8 @@ class Scene1 extends Phaser.Scene {
     this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
     this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
     this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
+    this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+    this.keyQ.on("down", this.whenKeyQPressed, this);
     //#endregion
 
     //#region RENDER TILEMAP
@@ -106,7 +109,7 @@ class Scene1 extends Phaser.Scene {
           id: "player",
           sprite: this.playerSprite,
           //walkingAnimationMapping: ,
-          startPosition: { x: 1, y: 2 },
+          startPosition: { x: 1, y: 1 },
           attackMeleeDMG: 3,
           attackRange: 3,
           attackRangeDMG: 2,
@@ -114,7 +117,7 @@ class Scene1 extends Phaser.Scene {
         {
           id: "dinosaur",
           sprite: this.dinosaurSprite,
-          startPosition: { x: 6, y: 8 },
+          startPosition: { x: 2, y: 2 },
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
@@ -122,7 +125,7 @@ class Scene1 extends Phaser.Scene {
         {
           id: "dinosaur2",
           sprite: this.dinosaurSprite2,
-          startPosition: { x: 8, y: 10 },
+          startPosition: { x: 3, y: 3 },
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
@@ -145,6 +148,7 @@ class Scene1 extends Phaser.Scene {
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
     this.testUI = this.add.text(0, 24, 'ATTACK');
+    this.healthUI = this.add.text(0, 54, '10');
     //#endregion
 
     //#region DEBUG MODE
@@ -152,6 +156,8 @@ class Scene1 extends Phaser.Scene {
       this.drawGrid();
     }
     //#endregion
+
+    this.startGame();
   }
 
   update() {
@@ -204,6 +210,9 @@ class Scene1 extends Phaser.Scene {
     //#endregion
   }
 
+  startGame() {
+  }
+
   //#region CUSTOM FUNCTIONS
 
   //#region CONTROLLER FUNCTIONS
@@ -238,20 +247,39 @@ class Scene1 extends Phaser.Scene {
   }
   //#endregion
   whenKeyQPressed() {
-    // do something
-    var canMove = this.playerMoveFreely;
+    if (this.canAttackMelee) {
+      console.log("PLAYER ATTACKED ENEMY");
+      this.playerMoveFinished();
+    }
+    else {
+      console.log("You're not close enough for range attack");
+    }
 
-    if (canMove) this.playerMoveFreely = false;
-    else this.playerMoveFreely = true;
-
-    console.log(this.playerMoveFreely);
   }
   //#region TURNBASED
+  playerMoveBegin() {
+    this.playerReference = this.gridEngine.getAllCharacters("player");
+    this.canAttackRange = this.checkRangeOverlap(this.playerReference.attackRange);
+    console.log(this.canAttackRange);
+    this.canAttackMelee = this.checkRangeOverlap(1);
+    this.canMove = true;
+  }
 
   // Called after every player move.
   playerMoveFinished() {
     this.playerTurns--;
-    this.setTextUI();
+    this.setPlayerTurnsUI();
+    //this.playerPosition = this.gridEngine.getPosition("player");
+    //console.log(this.playerPosition);
+    let myArray = this.gridEngineConfig.characters;
+
+    myArray.forEach(character => {
+      if (character.id != "player") {
+        this.currentEnemy = character;
+        this.checkRangeOverlap(this.gridEngineConfig.characters.id)
+      }
+    });
+
     if (this.playerTurns == 0) {
       // If no more turns, end player turn.
       this.endPlayerTurn();
@@ -267,40 +295,27 @@ class Scene1 extends Phaser.Scene {
   // Called after player turn, before resetting max player turns
   enemyTurn() {
     var enemyTurnDone = false;
-    //this.gridEngine.
-    // loop every enemy array and make them run their turn
-    // after all enemies are done with their moves set enemyTurnDone = true;
-    // for (let i = 0; i < this.enemyNumbers; i++) {
-    //   this.enemyDoSomething(this.gridEngineConfig.characters[i]);
-    // }
     let myArray = this.gridEngineConfig.characters;
-
-    myArray.forEach(element => {
-      if(element.id != "player") {
-        this.currentEnemy = element;
-      this.enemyDoSomething(element)
+    myArray.forEach(character => {
+      if (character.id != "player") {
+        this.currentEnemy = character;
+        this.enemyDoSomething(this.currentEnemy);
       }
     });
 
-
-    //this.enemyDoSomething("dinosaur");
-
     enemyTurnDone = true;
-
     if (enemyTurnDone) {
       this.resetPlayerTurn();
     }
   }
   enemyDoSomething(enemy) {
-    console.log(enemy);
-
     // 1. check if the enemy is in range to player
     // 2. if they are, it is possible to do attack (range vs melee?)
     // 3. select randomMoveInt based on moves possible
     let movesPossible = 0;
 
-    let canAttackRange = this.checkRangeOverlap(enemy, this.currentEnemy.attackRange);
-    let canAttackMelee = this.checkRangeOverlap(enemy, 1);
+    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange);
+    let canAttackMelee = this.checkRangeOverlap(1);
     let canMove = true;
 
     if (canMove)
@@ -313,8 +328,8 @@ class Scene1 extends Phaser.Scene {
     let randomMove = this.getRandomIntFromMax(movesPossible);
 
     if (randomMove == 0) {
-      console.log("Character should do a move now");
-      //move
+      // let isTileBlockedUp = this.gridEngine.isBlocked(this.currentEnemy.x, this.currentEnemy.y + 1); 
+      // console.log(isTileBlockedUp);
       // check if the character can move in x direction, if they can, make it possible move
 
       switch (this.getRandomIntFromMax(4)) {
@@ -331,66 +346,66 @@ class Scene1 extends Phaser.Scene {
           this.gridEngine.move(this.currentEnemy.id, "down");
           break;
       }
-      console.log("This is after said character move");
+      //console.log("This is after said character move");
     }
     else if (randomMove == 1) {
       //attack range
+      console.log("RANGE ATTACK");
+      this.playerHealth = this.playerHealth - this.currentEnemy.attackRangeDMG;
+      this.updateHealthUI();
     }
 
     else if (randomMove == 2) {
       // attack melee
+      console.log("MELEE ATTACK");
+      this.playerHealth = this.playerHealth - this.currentEnemy.attackMeleeDMG;
+      this.updateHealthUI();
+
     }
   }
-  checkRangeOverlap(character, range) {
-    // check overlap range, use character and range
-    let rangeOverlap = false;
-
-    return rangeOverlap;
-  }
-
+  
   resetPlayerTurn() {
     this.playerTurn = true;
-    this.playerTurns = this.playerTurnsMax
-    this.setTextUI();
+    this.playerTurns = this.playerTurnsMax;
+    this.setPlayerTurnsUI();
+    this.playerMoveBegin();
+  }
+  
+  checkRangeOverlap(range) {
+    // check overlap range, use character and range
+    let rangeOverlap;
+
+    let playerPos = this.gridEngine.getPosition("player");
+    let enemyPos = this.gridEngine.getPosition(this.currentEnemy.id);
+    let diffX = this.getDifference(enemyPos.x, playerPos.x);
+    let diffY = this.getDifference(enemyPos.y, playerPos.y);
+    //console.log(diffX);
+
+    if (diffX <= range && diffY <= range) {
+      //console.log("IN RANGE");
+      return rangeOverlap = true;
+    }
+    else {
+      return rangeOverlap = false;
+    }
+  }
+
+  getDifference(a, b) {
+    return Math.abs(a - b);
   }
 
   surroundingPlayerTiles() {
     let x = this.player.x;
     let y = this.player.y;
   }
-
-  // if this.playerTurns != 0
-  // player can do one of x
-  // when done x, this.playerTurns -- (minus icrement)
-  // call randomEnemyTurn() after last turn (DO NOT CALL IT ON ELSE), use console.log to check if it calls once at correct time
-  //this.overlapZone.body.debugBodyColor = this.overlapZone.body.touching.none ? 0x00ffff : 0xffff00;
-
-  //   if (this.debugMode)
-  //     this.containerText.text = `canMove: ${this.playerMoveFreely}`;
-  // }
-  // switch or while?
-  // playerAction number needs to be set in update?
-
-  // afterPlayerAction() {
-  //   this.playerTurns - 1;
-  //   console.log(this.playerTurns);
-  //   if (this.playerTurns == 0) {
-  //     //this.randomEnemyTurn();
-  //   }
-  // }
-
-  // randomEnemyTurn() {
-  //   // if this.playerTurns == 0
-  //   // do one of x actions
-
-  //   this.playerTurns = this.playerTurnsMax;
-  //   console.log("Reset turns");
-  // }
   //#endregion
 
   //#region UI
-  setTextUI() {
+  setPlayerTurnsUI() {
     this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
+  }
+  updateHealthUI() {
+    this.healthUI.setText('Health: ' + this.playerHealth);
   }
 
   visibilityUI(nameUI, visibility) {
@@ -405,6 +420,7 @@ class Scene1 extends Phaser.Scene {
     }
   }
   //#endregion
+
 
   //#region OTHER FUNCTIONS
   spawn(gridPlacement, offset) {
