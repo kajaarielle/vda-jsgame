@@ -1,5 +1,7 @@
 // https://photonstorm.github.io/phaser3-docs/
 
+const timer = ms => new Promise(res => setTimeout(res, ms))
+
 class Scene1 extends Phaser.Scene {
   constructor() {
     super({
@@ -21,10 +23,10 @@ class Scene1 extends Phaser.Scene {
     // PLAYER CHARACTER
     this.load.spritesheet(
       "player",
-      "images/player.png",
+      "images/cat-spritesheet.png",
       {
-        frameWidth: 32,
-        frameHeight: 32,
+        frameWidth: 48,
+        frameHeight: 48,
       }
     );
     // NPCs (!!should change to spritesheet)
@@ -40,7 +42,7 @@ class Scene1 extends Phaser.Scene {
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.debugMode = false;
+    this.debugMode = true;
     this.playerTurnsMax = 3;
     this.playerTurns = 3;
     this.playerTurn = true;
@@ -108,7 +110,29 @@ class Scene1 extends Phaser.Scene {
         {
           id: "player",
           sprite: this.playerSprite,
-          //walkingAnimationMapping: ,
+          walkingAnimationMapping: {
+            up: {
+              leftFoot: 6,
+              standing: 5,
+              rightFoot: 7,
+            },
+            down: {
+              //still: 1,
+              leftFoot: 2,
+              standing: 1,
+              rightFoot: 3,
+            },
+            left: {
+              leftFoot: 10,
+              standing: 9,
+              rightFoot: 11,
+            },
+            right: {
+              leftFoot: 14,
+              standing: 13,
+              rightFoot: 15,
+            },
+          },
           startPosition: { x: 2, y: 2 },
           attackMeleeDMG: 3,
           attackRange: 3,
@@ -185,10 +209,11 @@ class Scene1 extends Phaser.Scene {
   //#region CUSTOM FUNCTIONS
 
   //#region CONTROLLER FUNCTIONS
+
+  // check if the player actually moves !!!
   whenKeyUPPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "up");
-      // check if the player moved or not during their turn
       this.playerMoveFinished();
     }
   }
@@ -201,18 +226,17 @@ class Scene1 extends Phaser.Scene {
   whenKeyLEFTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "left");
-      this.flipSprite(this.playerRef.sprite, "left");
+      //this.flipSprite(this.playerRef.sprite, "left");
       this.playerMoveFinished();
     }
   }
   whenKeyRIGHTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "right");
-      this.flipSprite(this.playerRef.sprite, "right");
+      //this.flipSprite(this.playerRef.sprite, "right");
       this.playerMoveFinished();
     }
   }
-
   whenKeyQPressed() {
     let myArray = this.characterDatabase.characters;
 
@@ -245,7 +269,6 @@ class Scene1 extends Phaser.Scene {
           }
           else {
             console.log("You're not close enough for attack");
-
           }
         }
       }
@@ -255,7 +278,7 @@ class Scene1 extends Phaser.Scene {
 
   //#region TURNBASED
   startGame() {
-    let myArray = this.gridEngineConfig.characters;
+    let myArray = this.characterDatabase.characters;
 
     myArray.forEach(character => {
       if (character.id == "player") {
@@ -276,6 +299,7 @@ class Scene1 extends Phaser.Scene {
     this.inRangeRange = 0;
 
     let myArray = this.characterDatabase.characters;
+
     myArray.forEach(character => {
       if (character.id != "player") {
         this.currentEnemy = character;
@@ -288,14 +312,18 @@ class Scene1 extends Phaser.Scene {
         }
       }
     });
-    if (this.inRangeMelee > 0) {
+    if (this.inRangeMelee > 0 || this.inRangeRange > 0) {
       this.visibilityUI(this.attackUI, true);
+      //console.log("in range");
+      //console.log(this.inRangeMelee + this.inRangeRange);
     }
-    else if (this.inRangeRange > 0) {
-      this.visibilityUI(this.attackUI, true);
-    }
+    // else if (this.inRangeRange > 0) {
+    //   this.visibilityUI(this.attackUI, true);
+    //   console.log("in range range");
+    // }
     else {
       this.visibilityUI(this.attackUI, false);
+      console.log("not in range");
     }
   }
 
@@ -316,34 +344,26 @@ class Scene1 extends Phaser.Scene {
     this.playerTurn = false;
     this.enemyTurn();
   }
-  
-  delayLoop(fn, delay) {
-    return (x, i) => {
-      setTimeout(() => {
-        fn(x);
-      }, i * delay);
+
+  async enemyTurn() {
+    let enemyTurnDone = false;
+
+    const characters = this.characterDatabase.characters;
+
+    for (const character of characters) {
+        if (character.id !== 'player') {
+            this.currentEnemy = character;
+            this.enemyDoSomething(this.currentEnemy);
+            await timer(500);
+        }
     }
-  }
-
-  // Called after player turn, before resetting max player turns
-  enemyTurn() {
-    var enemyTurnDone = false;
-
-    let myArray = this.characterDatabase.characters;
-
-    myArray.forEach((character) => {
-      if (character.id != "player") {
-        this.currentEnemy = character;
-        this.enemyDoSomething(this.currentEnemy);
-      }
-    });
 
     enemyTurnDone = true;
     if (enemyTurnDone) {
       this.resetPlayerTurn();
     }
-  }
-  
+}
+
   enemyDoSomething(enemy) {
     let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
     let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
@@ -490,7 +510,7 @@ class Scene1 extends Phaser.Scene {
   //#region DEBUG
   drawGrid() {
     // https://phaser.io/examples/v3/view/game-objects/shapes/grid
-    var g1 = this.add.grid(128, 128, 256, 256, 16, 16, 0xff0000, 0.2);
+    let g1 = this.add.grid(128, 128, 256, 256, 16, 16, 0xff0000, 0.2);
   }
   //#endregion
 
