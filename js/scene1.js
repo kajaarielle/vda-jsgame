@@ -36,6 +36,10 @@ class Scene1 extends Phaser.Scene {
       "dinosaur",
       "images/dinosaur.png"
     );
+    this.load.image(
+      "dinosaurPurple",
+      "images/dinosaur-purple.png"
+    );
     //#endregion
 
     //#region SET VARIABLES
@@ -99,11 +103,11 @@ class Scene1 extends Phaser.Scene {
     );
     this.dinosaurSprite3 = this.add.sprite(
       0, 0,
-      "dinosaur"
+      "dinosaurPurple"
     );
     this.dinosaurSprite4 = this.add.sprite(
       0, 0,
-      "dinosaur"
+      "dinosaurPurple"
     );
     //#endregion
 
@@ -281,16 +285,16 @@ class Scene1 extends Phaser.Scene {
   }
 
   whenKeyQPressed() {
-    //let myArray = this.gridEngineConfig.characters;
     let myArray = this.characterDatabase.characters;
 
     myArray.forEach(character => {
-      if (character == "player") {
-        //this.playerReference = character;
+      if (character.id == "player") {
         // no need to do anything
       }
       else if (character.id != "player") {
         this.currentEnemy = character;
+        this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+
         if (this.playerCanAttackMelee) {
           this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackMeleeDMG;
           console.log("PLAYER MELEE ATTACKED ENEMY");
@@ -301,6 +305,7 @@ class Scene1 extends Phaser.Scene {
           this.playerMoveFinished();
         }
         else {
+          this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
           if (this.playerCanAttackRange) {
             this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackRangeDMG;
             console.log("PLAYER RANGE ATTACKED ENEMY");
@@ -321,8 +326,8 @@ class Scene1 extends Phaser.Scene {
 
   //#region TURNBASED
   onStartAndEveryMove() {
-    this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-    this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
+    // this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+    // this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
   }
 
   playerMoveBegin() {
