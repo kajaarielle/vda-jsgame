@@ -86,28 +86,23 @@ class Scene1 extends Phaser.Scene {
 
     //#region ADD CHARACTERS AS SPRITES
     this.playerSprite = this.add.sprite(
-      this.spawn(4, 8), // x
-      this.spawn(3, 0), // y
+      0, 0,
       "player"
     );
     this.dinosaurSprite = this.add.sprite(
-      this.spawn(7, 12), // x
-      this.spawn(7, 2), // y
+      0, 0,
       "dinosaur"
     );
     this.dinosaurSprite2 = this.add.sprite(
-      this.spawn(10, 12), // x
-      this.spawn(10, 2), // y
+      0, 0,
       "dinosaur"
     );
     this.dinosaurSprite3 = this.add.sprite(
-      this.spawn(10, 12), // x
-      this.spawn(10, 2), // y
+      0, 0,
       "dinosaur"
     );
     this.dinosaurSprite4 = this.add.sprite(
-      this.spawn(10, 12), // x
-      this.spawn(10, 2), // y
+      0, 0,
       "dinosaur"
     );
     //#endregion
