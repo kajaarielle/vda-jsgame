@@ -27,10 +27,6 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 32,
       }
     );
-    // this.load.image(
-    //   "shadow",
-    //   "https://cdn.glitch.global/7cb1200c-06f4-461b-a749-328eb4b05845/shadow.png?v=1649351722677"
-    // );
     // NPCs (!!should change to spritesheet)
     this.load.image(
       "dinosaur",
@@ -45,16 +41,11 @@ class Scene1 extends Phaser.Scene {
     //#region SET VARIABLES
     this.pixelSize = 16;
     this.debugMode = false;
-
     this.playerTurnsMax = 3;
     this.playerTurns = 3;
     this.playerTurn = true;
     this.moveSpeed = 16;
     this.playerHealth = 10;
-
-    this.target = new Phaser.Math.Vector2();
-
-    // this.controller = new Controller(this);
     //#endregion
   }
 
@@ -175,7 +166,7 @@ class Scene1 extends Phaser.Scene {
 
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
-    this.AttackUI = this.add.text(0, 24, 'ATTACK');
+    this.attackUI = this.add.text(0, 24, 'ATTACK');
     this.healthUI = this.add.text(0, 54, 'HEALTH:' + this.playerHealth);
     //#endregion
 
@@ -189,69 +180,9 @@ class Scene1 extends Phaser.Scene {
   }
 
   update() {
-    //#region TEST PLAYER MOVEMENT
-
-    // var isUpDown = this.input.keyboard.checkDown(this.controller.keyUp)
-    // if (isUpDown) {
-    //   if (this.playerTurn && this.playerTurns != 0) {
-    //     // move
-
-
-    //   }
-    // }
-
-    // var isDownDown = this.input.keyboard.checkDown(this.controller.keyDown)
-    // if (isDownDown) {
-    //   if (this.playerTurn && this.playerTurns != 0) {
-    //     // move
-    //     this.playerTurns--;
-    //     this.setTextUI();
-    //     if (this.playerTurns == 0) {
-    //       this.endPlayerTurn();
-    //     }
-    //   }
-    // }
-
-    // var isLeftDown = this.input.keyboard.checkDown(this.controller.keyLeft)
-    // if (isLeftDown) {
-    //   if (this.playerTurn && this.playerTurns != 0) {
-    //     // move
-    //     this.playerTurns--;
-    //     this.setTextUI();
-    //     if (this.playerTurns == 0) {
-    //       this.endPlayerTurn();
-    //     }
-    //   }
-    // }
-
-    // var isRightDown = this.input.keyboard.checkDown(this.controller.keyRight)
-    // if (isRightDown) {
-    //   if (this.playerTurn && this.playerTurns != 0) {
-    //     // move
-    //     this.playerTurns--;
-    //     this.setTextUI();
-    //     if (this.playerTurns == 0) {
-    //       this.endPlayerTurn();
-    //     }
-    //   }
-    // }
-    //#endregion
-  }
-
-  startGame() {
-    let myArray = this.gridEngineConfig.characters;
-
-    myArray.forEach(character => {
-      if (character.id == "player") {
-        this.playerReference = character;
-      }
-      this.playerMoveBegin();
-      this.onStartAndEveryMove();
-    });
   }
 
   //#region CUSTOM FUNCTIONS
-  
 
   //#region CONTROLLER FUNCTIONS
   whenKeyUPPressed() {
@@ -266,20 +197,18 @@ class Scene1 extends Phaser.Scene {
       this.gridEngine.move("player", "down");
       this.playerMoveFinished();
     }
-
   }
   whenKeyLEFTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "left");
-      this.flipSprite(this.playerReference.sprite, "left");
+      this.flipSprite(this.playerRef.sprite, "left");
       this.playerMoveFinished();
     }
-
   }
   whenKeyRIGHTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "right");
-      this.flipSprite(this.playerReference.sprite, "right");
+      this.flipSprite(this.playerRef.sprite, "right");
       this.playerMoveFinished();
     }
   }
@@ -296,7 +225,7 @@ class Scene1 extends Phaser.Scene {
         this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
 
         if (this.playerCanAttackMelee) {
-          this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackMeleeDMG;
+          this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackMeleeDMG;
           console.log("PLAYER MELEE ATTACKED ENEMY");
           // if enemy has health =< 0, destroy them.
           if (this.currentEnemy.health <= 0) {
@@ -305,9 +234,9 @@ class Scene1 extends Phaser.Scene {
           this.playerMoveFinished();
         }
         else {
-          this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
+          this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id);
           if (this.playerCanAttackRange) {
-            this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackRangeDMG;
+            this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackRangeDMG;
             console.log("PLAYER RANGE ATTACKED ENEMY");
             if (this.currentEnemy.health <= 0) {
               this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
@@ -316,7 +245,7 @@ class Scene1 extends Phaser.Scene {
           }
           else {
             console.log("You're not close enough for attack");
-            
+
           }
         }
       }
@@ -325,19 +254,56 @@ class Scene1 extends Phaser.Scene {
   //#endregion
 
   //#region TURNBASED
-  onStartAndEveryMove() {
-    // this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-    // this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
+  startGame() {
+    let myArray = this.gridEngineConfig.characters;
+
+    myArray.forEach(character => {
+      if (character.id == "player") {
+        this.playerRef = character;
+      }
+    });
+
+    this.playerMoveBegin();
   }
 
   playerMoveBegin() {
     this.canMove = true;
+    this.checkIfCanAttackAndEnableUI();
+  }
+
+  checkIfCanAttackAndEnableUI() {
+    this.inRangeMelee = 0;
+    this.inRangeRange = 0;
+
+    let myArray = this.characterDatabase.characters;
+    myArray.forEach(character => {
+      if (character.id != "player") {
+        this.currentEnemy = character;
+
+        if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
+          this.inRangeMelee++;
+        }
+        if (this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id)) {
+          this.inRangeRange++;
+        }
+      }
+    });
+    if (this.inRangeMelee > 0) {
+      this.visibilityUI(this.attackUI, true);
+    }
+    else if (this.inRangeRange > 0) {
+      this.visibilityUI(this.attackUI, true);
+    }
+    else {
+      this.visibilityUI(this.attackUI, false);
+    }
   }
 
   // Called after every player move.
   playerMoveFinished() {
     this.playerTurns--;
     this.setPlayerTurnsUI();
+    this.checkIfCanAttackAndEnableUI();
 
     if (this.playerTurns == 0) {
       // If no more turns, end player turn.
@@ -347,15 +313,25 @@ class Scene1 extends Phaser.Scene {
 
   // Called when the player has finished all their turns
   endPlayerTurn() {
-    console.log("Player turn over");
+    this.playerTurn = false;
     this.enemyTurn();
+  }
+  
+  delayLoop(fn, delay) {
+    return (x, i) => {
+      setTimeout(() => {
+        fn(x);
+      }, i * delay);
+    }
   }
 
   // Called after player turn, before resetting max player turns
   enemyTurn() {
     var enemyTurnDone = false;
+
     let myArray = this.characterDatabase.characters;
-    myArray.forEach(character => {
+
+    myArray.forEach((character) => {
       if (character.id != "player") {
         this.currentEnemy = character;
         this.enemyDoSomething(this.currentEnemy);
@@ -367,15 +343,12 @@ class Scene1 extends Phaser.Scene {
       this.resetPlayerTurn();
     }
   }
+  
   enemyDoSomething(enemy) {
-    // 1. check if the enemy is in range to player
-    // 2. if they are, it is possible to do attack (range vs melee?)
-    // 3. select randomMoveInt based on moves possible
-    let movesPossible = 0;
-
     let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
     let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
     let canMove = true;
+    let movesPossible = 0;
 
     if (canMove)
       movesPossible++;
