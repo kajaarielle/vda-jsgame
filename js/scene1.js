@@ -100,6 +100,16 @@ class Scene1 extends Phaser.Scene {
       this.spawn(10, 2), // y
       "dinosaur"
     );
+    this.dinosaurSprite3 = this.add.sprite(
+      this.spawn(10, 12), // x
+      this.spawn(10, 2), // y
+      "dinosaur"
+    );
+    this.dinosaurSprite4 = this.add.sprite(
+      this.spawn(10, 12), // x
+      this.spawn(10, 2), // y
+      "dinosaur"
+    );
     //#endregion
 
     //#region GRID ENGINE CONFIG
@@ -109,7 +119,7 @@ class Scene1 extends Phaser.Scene {
           id: "player",
           sprite: this.playerSprite,
           //walkingAnimationMapping: ,
-          startPosition: { x: 1, y: 1 },
+          startPosition: { x: 2, y: 2 },
           attackMeleeDMG: 3,
           attackRange: 3,
           attackRangeDMG: 2,
@@ -117,7 +127,7 @@ class Scene1 extends Phaser.Scene {
         {
           id: "dinosaur",
           sprite: this.dinosaurSprite,
-          startPosition: { x: 2, y: 2 },
+          startPosition: { x: 5, y: 7 },
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
@@ -126,7 +136,25 @@ class Scene1 extends Phaser.Scene {
         {
           id: "dinosaur2",
           sprite: this.dinosaurSprite2,
-          startPosition: { x: 3, y: 3 },
+          startPosition: { x: 12, y: 10 },
+          attackMeleeDMG: 2,
+          attackRange: 2,
+          attackRangeDMG: 1,
+          health: 5,
+        },
+        {
+          id: "dinosaur3",
+          sprite: this.dinosaurSprite3,
+          startPosition: { x: 6, y: 14 },
+          attackMeleeDMG: 2,
+          attackRange: 2,
+          attackRangeDMG: 1,
+          health: 5,
+        },
+        {
+          id: "dinosaur4",
+          sprite: this.dinosaurSprite4,
+          startPosition: { x: 14, y: 5 },
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
@@ -136,38 +164,6 @@ class Scene1 extends Phaser.Scene {
     };
     this.characterDatabase = this.gridEngineConfig;
     console.log(this.characterDatabase);
-
-    // this.characterData = {
-    //   characterData: [
-    //     {
-    //       player: {
-    //         attackMeleeDMG: 3,
-    //         attackRange: 3,
-    //         attackRangeDMG: 2,
-    //       }
-    //     },
-    //     {
-    //       dinosaur1: {
-    //         attackMeleeDMG: 2,
-    //         attackRange: 2,
-    //         attackRangeDMG: 1,
-    //         health: 5,
-    //       }
-    //     },
-    //     {
-    //       dinosaur2: {
-    //         attackMeleeDMG: 2,
-    //         attackRange: 2,
-    //         attackRangeDMG: 1,
-    //         health: 5,
-    //       }
-    //     },
-    //   ],
-    // };
-
-    //this.enemyNumbers = Object.keys(this.gridEngineConfig.characters).length - 1;
-    //this.enemies = ["dinosaur", "dinosaur2"];
-
 
     this.gridEngine.create(tileMap, this.gridEngineConfig);
     //#endregion
@@ -180,8 +176,8 @@ class Scene1 extends Phaser.Scene {
 
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
-    this.testUI = this.add.text(0, 24, 'ATTACK');
-    this.healthUI = this.add.text(0, 54, '10');
+    this.AttackUI = this.add.text(0, 24, 'ATTACK');
+    this.healthUI = this.add.text(0, 54, 'HEALTH:' + this.playerHealth);
     //#endregion
 
     //#region DEBUG MODE
@@ -251,11 +247,12 @@ class Scene1 extends Phaser.Scene {
         this.playerReference = character;
       }
       this.playerMoveBegin();
+      this.onStartAndEveryMove();
     });
   }
 
   //#region CUSTOM FUNCTIONS
-
+  
 
   //#region CONTROLLER FUNCTIONS
   whenKeyUPPressed() {
@@ -275,8 +272,7 @@ class Scene1 extends Phaser.Scene {
   whenKeyLEFTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "left");
-      //this.visibilityUI(this.testUI, false);
-
+      this.flipSprite(this.playerReference.sprite, "left");
       this.playerMoveFinished();
     }
 
@@ -284,6 +280,7 @@ class Scene1 extends Phaser.Scene {
   whenKeyRIGHTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.gridEngine.move("player", "right");
+      this.flipSprite(this.playerReference.sprite, "right");
       this.playerMoveFinished();
     }
   }
@@ -299,37 +296,41 @@ class Scene1 extends Phaser.Scene {
       }
       else if (character.id != "player") {
         this.currentEnemy = character;
-        //console.log(this.currentEnemy);
-        let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-        if (canAttackMelee) {
+        if (this.playerCanAttackMelee) {
           this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackMeleeDMG;
           console.log("PLAYER MELEE ATTACKED ENEMY");
           // if enemy has health =< 0, destroy them.
           if (this.currentEnemy.health <= 0) {
             this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
           }
+          this.playerMoveFinished();
         }
         else {
-          let canAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
-          if (canAttackRange) {
+          if (this.playerCanAttackRange) {
             this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackRangeDMG;
             console.log("PLAYER RANGE ATTACKED ENEMY");
-            // if enemy has health =< 0, destroy them.
             if (this.currentEnemy.health <= 0) {
               this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
             }
+            this.playerMoveFinished();
           }
           else {
             console.log("You're not close enough for attack");
+            
           }
         }
       }
     });
   }
   //#endregion
+
   //#region TURNBASED
+  onStartAndEveryMove() {
+    this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+    this.playerCanAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
+  }
+
   playerMoveBegin() {
-    //this.playerReference = this.gridEngine.getAllCharacters("player");
     this.canMove = true;
   }
 
@@ -337,16 +338,6 @@ class Scene1 extends Phaser.Scene {
   playerMoveFinished() {
     this.playerTurns--;
     this.setPlayerTurnsUI();
-    //this.playerPosition = this.gridEngine.getPosition("player");
-    //console.log(this.playerPosition);
-    // let myArray = this.gridEngineConfig.characters;
-
-    // myArray.forEach(character => {
-    //   if (character.id != "player") {
-    //     this.currentEnemy = character;
-    //     this.checkRangeOverlap(this.currentEnemy)
-    //   }
-    // });
 
     if (this.playerTurns == 0) {
       // If no more turns, end player turn.
@@ -403,9 +394,11 @@ class Scene1 extends Phaser.Scene {
       switch (this.getRandomIntFromMax(4)) {
         case 0:
           this.gridEngine.move(this.currentEnemy.id, "right");
+          this.flipSprite(this.currentEnemy.sprite, "right");
           break;
         case 1:
           this.gridEngine.move(this.currentEnemy.id, "left");
+          this.flipSprite(this.currentEnemy.sprite, "left");
           break;
         case 2:
           this.gridEngine.move(this.currentEnemy.id, "up");
@@ -467,10 +460,10 @@ class Scene1 extends Phaser.Scene {
     console.log(this.gridEngine.getAllCharacters());
     this.setThisSprite = sprite;
     this.setThisSprite.destroy();
-    
+
     // remove data from array
-    const removeFromDatabase = this.characterDatabase.characters.findIndex( item => item.id === character );
-    this.characterDatabase.characters.splice( removeFromDatabase, 1 );
+    const removeFromDatabase = this.characterDatabase.characters.findIndex(item => item.id === character);
+    this.characterDatabase.characters.splice(removeFromDatabase, 1);
 
   }
   //#endregion
@@ -498,6 +491,19 @@ class Scene1 extends Phaser.Scene {
 
 
   //#region OTHER FUNCTIONS
+  flipSprite(sprite, direction) {
+    this.setThisSprite = sprite;
+    let flipX;
+
+    if (direction == "left") {
+      flipX = false;
+    }
+    if (direction == "right") {
+      flipX = true;
+    }
+
+    this.setThisSprite.flipX = flipX;
+  }
   spawn(gridPlacement, offset) {
     const gridSize = 16;
     const place = gridPlacement * gridSize - offset;
