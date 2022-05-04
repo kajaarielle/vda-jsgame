@@ -134,36 +134,38 @@ class Scene1 extends Phaser.Scene {
         },
       ],
     };
+    this.characterDatabase = this.gridEngineConfig;
+    console.log(this.characterDatabase);
 
-    this.characterData = {
-      characterData: [
-        {
-          player: {
-            attackMeleeDMG: 3,
-            attackRange: 3,
-            attackRangeDMG: 2,
-          }
-        },
-        {
-          dinosaur1: {
-            attackMeleeDMG: 2,
-            attackRange: 2,
-            attackRangeDMG: 1,
-            health: 5,
-          }
-        },
-        {
-          dinosaur2: {
-            attackMeleeDMG: 2,
-            attackRange: 2,
-            attackRangeDMG: 1,
-            health: 5,
-          }
-        },
-      ],
-    };
+    // this.characterData = {
+    //   characterData: [
+    //     {
+    //       player: {
+    //         attackMeleeDMG: 3,
+    //         attackRange: 3,
+    //         attackRangeDMG: 2,
+    //       }
+    //     },
+    //     {
+    //       dinosaur1: {
+    //         attackMeleeDMG: 2,
+    //         attackRange: 2,
+    //         attackRangeDMG: 1,
+    //         health: 5,
+    //       }
+    //     },
+    //     {
+    //       dinosaur2: {
+    //         attackMeleeDMG: 2,
+    //         attackRange: 2,
+    //         attackRangeDMG: 1,
+    //         health: 5,
+    //       }
+    //     },
+    //   ],
+    // };
 
-    this.enemyNumbers = Object.keys(this.gridEngineConfig.characters).length - 1;
+    //this.enemyNumbers = Object.keys(this.gridEngineConfig.characters).length - 1;
     //this.enemies = ["dinosaur", "dinosaur2"];
 
 
@@ -242,9 +244,14 @@ class Scene1 extends Phaser.Scene {
   }
 
   startGame() {
-    this.playerMoveBegin();
+    let myArray = this.gridEngineConfig.characters;
 
-    console.log(this.gridEngine.getAllCharacters());
+    myArray.forEach(character => {
+      if (character.id == "player") {
+        this.playerReference = character;
+      }
+      this.playerMoveBegin();
+    });
   }
 
   //#region CUSTOM FUNCTIONS
@@ -283,10 +290,12 @@ class Scene1 extends Phaser.Scene {
 
   whenKeyQPressed() {
     //let myArray = this.gridEngineConfig.characters;
-    let myArray = this.gridEngineConfig.characters;
+    let myArray = this.characterDatabase.characters;
+
     myArray.forEach(character => {
-      if (character.id == "player") {
-        this.playerReference = character;
+      if (character == "player") {
+        //this.playerReference = character;
+        // no need to do anything
       }
       else if (character.id != "player") {
         this.currentEnemy = character;
@@ -354,7 +363,7 @@ class Scene1 extends Phaser.Scene {
   // Called after player turn, before resetting max player turns
   enemyTurn() {
     var enemyTurnDone = false;
-    let myArray = this.gridEngineConfig.characters;
+    let myArray = this.characterDatabase.characters;
     myArray.forEach(character => {
       if (character.id != "player") {
         this.currentEnemy = character;
@@ -458,9 +467,10 @@ class Scene1 extends Phaser.Scene {
     console.log(this.gridEngine.getAllCharacters());
     this.setThisSprite = sprite;
     this.setThisSprite.destroy();
-    console.log(this.gridEngineConfig.characters);
-
-    // how do i remove the character from the gridengineconfig?
+    
+    // remove data from array
+    const removeFromDatabase = this.characterDatabase.characters.findIndex( item => item.id === character );
+    this.characterDatabase.characters.splice( removeFromDatabase, 1 );
 
   }
   //#endregion
