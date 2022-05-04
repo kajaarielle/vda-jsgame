@@ -40,7 +40,7 @@ class Scene1 extends Phaser.Scene {
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.debugMode = true;
+    this.debugMode = false;
 
     this.playerTurnsMax = 3;
     this.playerTurns = 3;
@@ -121,6 +121,7 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          health: 5,
         },
         {
           id: "dinosaur2",
@@ -129,9 +130,39 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          health: 5,
         },
       ],
     };
+
+    this.characterData = {
+      characterData: [
+        {
+          player: {
+            attackMeleeDMG: 3,
+            attackRange: 3,
+            attackRangeDMG: 2,
+          }
+        },
+        {
+          dinosaur1: {
+            attackMeleeDMG: 2,
+            attackRange: 2,
+            attackRangeDMG: 1,
+            health: 5,
+          }
+        },
+        {
+          dinosaur2: {
+            attackMeleeDMG: 2,
+            attackRange: 2,
+            attackRangeDMG: 1,
+            health: 5,
+          }
+        },
+      ],
+    };
+
     this.enemyNumbers = Object.keys(this.gridEngineConfig.characters).length - 1;
     //this.enemies = ["dinosaur", "dinosaur2"];
 
@@ -211,9 +242,13 @@ class Scene1 extends Phaser.Scene {
   }
 
   startGame() {
+    this.playerMoveBegin();
+
+    console.log(this.gridEngine.getAllCharacters());
   }
 
   //#region CUSTOM FUNCTIONS
+
 
   //#region CONTROLLER FUNCTIONS
   whenKeyUPPressed() {
@@ -245,23 +280,47 @@ class Scene1 extends Phaser.Scene {
       this.playerMoveFinished();
     }
   }
-  //#endregion
-  whenKeyQPressed() {
-    if (this.canAttackMelee) {
-      console.log("PLAYER ATTACKED ENEMY");
-      this.playerMoveFinished();
-    }
-    else {
-      console.log("You're not close enough for range attack");
-    }
 
+  whenKeyQPressed() {
+    //let myArray = this.gridEngineConfig.characters;
+    let myArray = this.gridEngineConfig.characters;
+    myArray.forEach(character => {
+      if (character.id == "player") {
+        this.playerReference = character;
+      }
+      else if (character.id != "player") {
+        this.currentEnemy = character;
+        //console.log(this.currentEnemy);
+        let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+        if (canAttackMelee) {
+          this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackMeleeDMG;
+          console.log("PLAYER MELEE ATTACKED ENEMY");
+          // if enemy has health =< 0, destroy them.
+          if (this.currentEnemy.health <= 0) {
+            this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+          }
+        }
+        else {
+          let canAttackRange = this.checkRangeOverlap(this.playerReference.attackRange, this.currentEnemy.id);
+          if (canAttackRange) {
+            this.currentEnemy.health = this.currentEnemy.health - this.playerReference.attackRangeDMG;
+            console.log("PLAYER RANGE ATTACKED ENEMY");
+            // if enemy has health =< 0, destroy them.
+            if (this.currentEnemy.health <= 0) {
+              this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+            }
+          }
+          else {
+            console.log("You're not close enough for attack");
+          }
+        }
+      }
+    });
   }
+  //#endregion
   //#region TURNBASED
   playerMoveBegin() {
-    this.playerReference = this.gridEngine.getAllCharacters("player");
-    this.canAttackRange = this.checkRangeOverlap(this.playerReference.attackRange);
-    console.log(this.canAttackRange);
-    this.canAttackMelee = this.checkRangeOverlap(1);
+    //this.playerReference = this.gridEngine.getAllCharacters("player");
     this.canMove = true;
   }
 
@@ -271,14 +330,14 @@ class Scene1 extends Phaser.Scene {
     this.setPlayerTurnsUI();
     //this.playerPosition = this.gridEngine.getPosition("player");
     //console.log(this.playerPosition);
-    let myArray = this.gridEngineConfig.characters;
+    // let myArray = this.gridEngineConfig.characters;
 
-    myArray.forEach(character => {
-      if (character.id != "player") {
-        this.currentEnemy = character;
-        this.checkRangeOverlap(this.gridEngineConfig.characters.id)
-      }
-    });
+    // myArray.forEach(character => {
+    //   if (character.id != "player") {
+    //     this.currentEnemy = character;
+    //     this.checkRangeOverlap(this.currentEnemy)
+    //   }
+    // });
 
     if (this.playerTurns == 0) {
       // If no more turns, end player turn.
@@ -314,8 +373,8 @@ class Scene1 extends Phaser.Scene {
     // 3. select randomMoveInt based on moves possible
     let movesPossible = 0;
 
-    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange);
-    let canAttackMelee = this.checkRangeOverlap(1);
+    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
+    let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
     let canMove = true;
 
     if (canMove)
@@ -363,20 +422,20 @@ class Scene1 extends Phaser.Scene {
 
     }
   }
-  
+
   resetPlayerTurn() {
     this.playerTurn = true;
     this.playerTurns = this.playerTurnsMax;
     this.setPlayerTurnsUI();
     this.playerMoveBegin();
   }
-  
-  checkRangeOverlap(range) {
+
+  checkRangeOverlap(range, enemy) {
     // check overlap range, use character and range
     let rangeOverlap;
 
     let playerPos = this.gridEngine.getPosition("player");
-    let enemyPos = this.gridEngine.getPosition(this.currentEnemy.id);
+    let enemyPos = this.gridEngine.getPosition(enemy);
     let diffX = this.getDifference(enemyPos.x, playerPos.x);
     let diffY = this.getDifference(enemyPos.y, playerPos.y);
     //console.log(diffX);
@@ -394,9 +453,15 @@ class Scene1 extends Phaser.Scene {
     return Math.abs(a - b);
   }
 
-  surroundingPlayerTiles() {
-    let x = this.player.x;
-    let y = this.player.y;
+  killCharacterAndSprite(character, sprite) {
+    this.gridEngine.removeCharacter(character);
+    console.log(this.gridEngine.getAllCharacters());
+    this.setThisSprite = sprite;
+    this.setThisSprite.destroy();
+    console.log(this.gridEngineConfig.characters);
+
+    // how do i remove the character from the gridengineconfig?
+
   }
   //#endregion
 
