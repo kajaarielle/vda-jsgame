@@ -46,9 +46,9 @@ class Scene1 extends Phaser.Scene {
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.debugMode = false;
-    this.playerTurnsMax = 3;
-    this.playerTurns = 3;
+    this.debugMode = true;
+    this.playerTurnsMax = 10;
+    this.playerTurns = this.playerTurnsMax;
     this.playerTurn = true;
     this.moveSpeed = 16;
     this.playerHealth = 10;
@@ -139,6 +139,7 @@ class Scene1 extends Phaser.Scene {
             },
           },
           startPosition: { x: 2, y: 2 },
+          offsetY: 16,
           attackMeleeDMG: 3,
           attackRange: 3,
           attackRangeDMG: 2,
@@ -330,7 +331,7 @@ class Scene1 extends Phaser.Scene {
     // }
     else {
       this.visibilityUI(this.attackUI, false);
-      console.log("not in range");
+      //console.log("not in range");
     }
   }
 
