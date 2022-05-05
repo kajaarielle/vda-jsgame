@@ -33,6 +33,14 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 48,
       }
     );
+    this.load.spritesheet(
+      "dragon",
+      "images/dragon-spritesheet.png",
+      {
+        frameWidth: 24,
+        frameHeight: 24,
+      }
+    );
     // NPCs (!!should change to spritesheet)
     this.load.image(
       "dinosaur",
@@ -43,17 +51,17 @@ class Scene1 extends Phaser.Scene {
       "images/dinosaur-purple.png"
     );
 
-    this.enemySpriteNames = ["dinosaur", "dinosaurPurple"];
+    this.enemySpriteNames = ["dinosaur", "dinosaurPurple", "dragon"];
     //#endregion
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.debugMode = true;
     this.playerTurnsMax = 10;
     this.playerTurns = this.playerTurnsMax;
     this.playerTurn = true;
     this.moveSpeed = 16;
     this.playerHealth = 10;
+    this.debugMode = false;
     //#endregion
   }
 
@@ -83,9 +91,14 @@ class Scene1 extends Phaser.Scene {
     //   const layer = game.createLayer(i, "Game Map", 0, 0);
     // }
     // layer names from Tiled, tileset, x, y
+    // https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
     const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
     const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
-    worldLayer.setCollisionByProperty({ ge_collide: true });
+    const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
+    const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
+    const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
+
+    //worldLayer.setCollisionByProperty({ ge_collide: true });
     //#endregion
 
     //#region ADD CHARACTERS AS SPRITES
@@ -98,6 +111,7 @@ class Scene1 extends Phaser.Scene {
 
     this.numberOfEnemies = 4;
 
+    //#region trying to autogen enemies
     // for (let i = 0; i < this.numberOfEnemies; i++) {
     //   //const element = this.numberOfEnemies[i];
     //   let enemyName = 'this.enemySprite' + (i+1);
@@ -109,7 +123,7 @@ class Scene1 extends Phaser.Scene {
     //   console.log(enemyName);
     // }
     // for (let i = 0; i < this.numberOfEnemies; i++) {
-      
+
     //   let enemyName = "enemySprite" + (i+1);
     //   let randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     //   this.enemyName = this.add.sprite(
@@ -119,26 +133,29 @@ class Scene1 extends Phaser.Scene {
     //   console.log(enemyName);
     //   // more statements
     // }
-    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //#endregion
+
+    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite1 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[this.randomEnemy]
+      this.enemySpriteNames[2]
     );
-    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite2 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[this.randomEnemy]
+      this.enemySpriteNames[2]
     );
-    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite3 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[this.randomEnemy]
+      this.enemySpriteNames[2]
     );
-    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite4 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[this.randomEnemy]
+      this.enemySpriteNames[2]
     );
+
     //#endregion
 
     //#region GRID ENGINE CONFIG
@@ -154,7 +171,6 @@ class Scene1 extends Phaser.Scene {
               rightFoot: 7,
             },
             down: {
-              //still: 1,
               leftFoot: 2,
               standing: 1,
               rightFoot: 3,
@@ -221,14 +237,14 @@ class Scene1 extends Phaser.Scene {
     //#endregion
 
     this.mapTileSize = 32;
-    this.cameras.main.setBounds(0, 0, (this.mapTileSize*this.pixelSize), (this.mapTileSize*this.pixelSize));
+    this.cameras.main.setBounds(0, 0, (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize));
     this.cameras.main.startFollow(this.playerSprite);
 
     //this.player.setCollideWorldBounds(true);
 
     // check for collisions
-    this.physics.add.collider(this.player, worldLayer);
-    this.physics.add.collider(this.dinosaur, worldLayer);
+    // this.physics.add.collider(this.player, worldLayer);
+    // this.physics.add.collider(this.dinosaur, worldLayer);
 
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
@@ -555,7 +571,7 @@ class Scene1 extends Phaser.Scene {
   drawGrid() {
     // https://phaser.io/examples/v3/view/game-objects/shapes/grid
     // https://newdocs.phaser.io/docs/3.55.2/Phaser.GameObjects.Grid
-    let g1 = this.add.grid((this.mapTileSize*this.pixelSize/2), (this.mapTileSize*this.pixelSize/2), (this.mapTileSize*this.pixelSize), (this.mapTileSize*this.pixelSize), 16, 16, 0xff0000, 0.2);
+    let g1 = this.add.grid((this.mapTileSize * this.pixelSize / 2), (this.mapTileSize * this.pixelSize / 2), (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize), 16, 16, 0xff0000, 0.2);
   }
   //#endregion
 
