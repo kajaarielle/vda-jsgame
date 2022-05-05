@@ -18,6 +18,10 @@ class Scene1 extends Phaser.Scene {
       "tileSet",
       "images/tileset.png"
     );
+    this.load.image(
+      "tileSetSproutland",
+      "images/tileset-sproutland.png"
+    );
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
 
     // PLAYER CHARACTER
@@ -42,7 +46,7 @@ class Scene1 extends Phaser.Scene {
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.debugMode = true;
+    this.debugMode = false;
     this.playerTurnsMax = 3;
     this.playerTurns = 3;
     this.playerTurn = true;
@@ -72,12 +76,13 @@ class Scene1 extends Phaser.Scene {
     const tileMap = this.make.tilemap({ key: "map" });
     // "name of tileset in Tiled", "name of phaser tileset reference"
     const tileset = tileMap.addTilesetImage("tileset", "tileSet");
+    const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
     // for (let i = 0; i < gameTilemap.layers.length; i++) {
     //   const layer = game.createLayer(i, "Game Map", 0, 0);
     // }
     // layer names from Tiled, tileset, x, y
-    const groundLayer = tileMap.createLayer("Ground", tileset, 0, 0);
-    const worldLayer = tileMap.createLayer("World", tileset, 0, 0);
+    const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
+    const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
     worldLayer.setCollisionByProperty({ ge_collide: true });
     //#endregion
 
