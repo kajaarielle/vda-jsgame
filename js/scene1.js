@@ -41,7 +41,6 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 24,
       }
     );
-    // NPCs (!!should change to spritesheet)
     this.load.image(
       "dinosaur",
       "images/dinosaur.png"
@@ -52,11 +51,19 @@ class Scene1 extends Phaser.Scene {
     );
 
     this.enemySpriteNames = ["dinosaur", "dinosaurPurple", "dragon"];
+
+    //#region AUDIO
+      this.load.audio("music", ["audio/music.mp3"]);
+      this.load.audio("attack", ["audio/attack.mp3"]);
+      this.load.audio("walk", ["audio/walk.mp3"]);
+    //#endregion
+
     //#endregion
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.playerTurnsMax = 10;
+    this.mapTileSize = 32;
+    this.playerTurnsMax = 5;
     this.playerTurns = this.playerTurnsMax;
     this.playerTurn = true;
     this.moveSpeed = 16;
@@ -80,6 +87,12 @@ class Scene1 extends Phaser.Scene {
     this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
     this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     this.keyQ.on("down", this.whenKeyQPressed, this);
+    //#endregion
+
+    //#region ADD SOUNDS
+    this.attackSound = this.sound.add("attack", { loop: false });
+    this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
+    this.musicSound = this.sound.add("music", { loop: true, volume: 0.1 });
     //#endregion
 
     //#region RENDER TILEMAP
@@ -236,15 +249,10 @@ class Scene1 extends Phaser.Scene {
     this.gridEngine.create(tileMap, this.gridEngineConfig);
     //#endregion
 
-    this.mapTileSize = 32;
+    //#region CAMERA
     this.cameras.main.setBounds(0, 0, (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize));
     this.cameras.main.startFollow(this.playerSprite);
-
-    //this.player.setCollideWorldBounds(true);
-
-    // check for collisions
-    // this.physics.add.collider(this.player, worldLayer);
-    // this.physics.add.collider(this.dinosaur, worldLayer);
+    //#endregion
 
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
@@ -271,18 +279,21 @@ class Scene1 extends Phaser.Scene {
   // check if the player actually moves !!!
   whenKeyUPPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
+      this.walkSound.play();
       this.gridEngine.move("player", "up");
       this.playerMoveFinished();
     }
   }
   whenKeyDOWNPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
+      this.walkSound.play();
       this.gridEngine.move("player", "down");
       this.playerMoveFinished();
     }
   }
   whenKeyLEFTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
+      this.walkSound.play();
       this.gridEngine.move("player", "left");
       //this.flipSprite(this.playerRef.sprite, "left");
       this.playerMoveFinished();
@@ -290,6 +301,7 @@ class Scene1 extends Phaser.Scene {
   }
   whenKeyRIGHTPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
+      this.walkSound.play();
       this.gridEngine.move("player", "right");
       //this.flipSprite(this.playerRef.sprite, "right");
       this.playerMoveFinished();
@@ -308,6 +320,7 @@ class Scene1 extends Phaser.Scene {
           this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
 
           if (this.playerCanAttackMelee) {
+            this.attackSound.play();
             this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackMeleeDMG;
             console.log("PLAYER MELEE ATTACKED ENEMY");
             // if enemy has health =< 0, destroy them.
@@ -319,6 +332,7 @@ class Scene1 extends Phaser.Scene {
           else {
             this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id);
             if (this.playerCanAttackRange) {
+              this.attackSound.play();
               this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackRangeDMG;
               console.log("PLAYER RANGE ATTACKED ENEMY");
               if (this.currentEnemy.health <= 0) {
@@ -338,6 +352,7 @@ class Scene1 extends Phaser.Scene {
 
   //#region TURNBASED
   startGame() {
+    this.musicSound.play();
     let myArray = this.characterDatabase.characters;
 
     myArray.forEach(character => {
@@ -366,9 +381,11 @@ class Scene1 extends Phaser.Scene {
 
         if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
           this.inRangeMelee++;
+          //this.attackSound.play();
         }
         if (this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id)) {
           this.inRangeRange++;
+          //this.attackSound.play();
         }
       }
     });
@@ -446,17 +463,21 @@ class Scene1 extends Phaser.Scene {
 
       switch (this.getRandomIntFromMax(4)) {
         case 0:
+          this.walkSound.play();
           this.gridEngine.move(this.currentEnemy.id, "right");
           this.flipSprite(this.currentEnemy.sprite, "right");
           break;
         case 1:
+          this.walkSound.play();
           this.gridEngine.move(this.currentEnemy.id, "left");
           this.flipSprite(this.currentEnemy.sprite, "left");
           break;
         case 2:
+          this.walkSound.play();
           this.gridEngine.move(this.currentEnemy.id, "up");
           break;
         case 3:
+          this.walkSound.play();
           this.gridEngine.move(this.currentEnemy.id, "down");
           break;
       }
@@ -465,6 +486,7 @@ class Scene1 extends Phaser.Scene {
     else if (randomMove == 1) {
       //attack range
       console.log("RANGE ATTACK");
+      this.attackSound.play();
       this.playerHealth = this.playerHealth - this.currentEnemy.attackRangeDMG;
       this.updateHealthUI();
     }
@@ -472,6 +494,7 @@ class Scene1 extends Phaser.Scene {
     else if (randomMove == 2) {
       // attack melee
       console.log("MELEE ATTACK");
+      this.attackSound.play();
       this.playerHealth = this.playerHealth - this.currentEnemy.attackMeleeDMG;
       this.updateHealthUI();
 
