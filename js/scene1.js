@@ -42,6 +42,8 @@ class Scene1 extends Phaser.Scene {
       "dinosaurPurple",
       "images/dinosaur-purple.png"
     );
+
+    this.enemySpriteNames = ["dinosaur", "dinosaurPurple"];
     //#endregion
 
     //#region SET VARIABLES
@@ -91,21 +93,51 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       "player"
     );
-    this.dinosaurSprite = this.add.sprite(
+
+    // randomize enemy sprites
+
+    this.numberOfEnemies = 4;
+
+    // for (let i = 0; i < this.numberOfEnemies; i++) {
+    //   //const element = this.numberOfEnemies[i];
+    //   let enemyName = 'this.enemySprite' + (i+1);
+    //   let randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //   enemyName = this.add.sprite(
+    //     0, 0,
+    //     this.enemySpriteNames[randomEnemy]
+    //   );
+    //   console.log(enemyName);
+    // }
+    // for (let i = 0; i < this.numberOfEnemies; i++) {
+      
+    //   let enemyName = "enemySprite" + (i+1);
+    //   let randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    //   this.enemyName = this.add.sprite(
+    //     0, 0,
+    //     this.enemySpriteNames[randomEnemy]
+    //   );
+    //   console.log(enemyName);
+    //   // more statements
+    // }
+    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    this.enemySprite1 = this.add.sprite(
       0, 0,
-      "dinosaur"
+      this.enemySpriteNames[this.randomEnemy]
     );
-    this.dinosaurSprite2 = this.add.sprite(
+    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    this.enemySprite2 = this.add.sprite(
       0, 0,
-      "dinosaur"
+      this.enemySpriteNames[this.randomEnemy]
     );
-    this.dinosaurSprite3 = this.add.sprite(
+    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    this.enemySprite3 = this.add.sprite(
       0, 0,
-      "dinosaurPurple"
+      this.enemySpriteNames[this.randomEnemy]
     );
-    this.dinosaurSprite4 = this.add.sprite(
+    this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
+    this.enemySprite4 = this.add.sprite(
       0, 0,
-      "dinosaurPurple"
+      this.enemySpriteNames[this.randomEnemy]
     );
     //#endregion
 
@@ -145,8 +177,8 @@ class Scene1 extends Phaser.Scene {
           attackRangeDMG: 2,
         },
         {
-          id: "dinosaur",
-          sprite: this.dinosaurSprite,
+          id: "enemy1",
+          sprite: this.enemySprite1,
           startPosition: { x: 5, y: 7 },
           attackMeleeDMG: 2,
           attackRange: 2,
@@ -154,8 +186,8 @@ class Scene1 extends Phaser.Scene {
           health: 5,
         },
         {
-          id: "dinosaur2",
-          sprite: this.dinosaurSprite2,
+          id: "enemy2",
+          sprite: this.enemySprite2,
           startPosition: { x: 12, y: 10 },
           attackMeleeDMG: 2,
           attackRange: 2,
@@ -163,8 +195,8 @@ class Scene1 extends Phaser.Scene {
           health: 5,
         },
         {
-          id: "dinosaur3",
-          sprite: this.dinosaurSprite3,
+          id: "enemy3",
+          sprite: this.enemySprite3,
           startPosition: { x: 6, y: 14 },
           attackMeleeDMG: 2,
           attackRange: 2,
@@ -172,8 +204,8 @@ class Scene1 extends Phaser.Scene {
           health: 5,
         },
         {
-          id: "dinosaur4",
-          sprite: this.dinosaurSprite4,
+          id: "enemy4",
+          sprite: this.enemySprite4,
           startPosition: { x: 14, y: 5 },
           attackMeleeDMG: 2,
           attackRange: 2,
@@ -187,6 +219,10 @@ class Scene1 extends Phaser.Scene {
 
     this.gridEngine.create(tileMap, this.gridEngineConfig);
     //#endregion
+
+    this.mapTileSize = 32;
+    this.cameras.main.setBounds(0, 0, (this.mapTileSize*this.pixelSize), (this.mapTileSize*this.pixelSize));
+    this.cameras.main.startFollow(this.playerSprite);
 
     //this.player.setCollideWorldBounds(true);
 
@@ -518,7 +554,8 @@ class Scene1 extends Phaser.Scene {
   //#region DEBUG
   drawGrid() {
     // https://phaser.io/examples/v3/view/game-objects/shapes/grid
-    let g1 = this.add.grid(128, 128, 256, 256, 16, 16, 0xff0000, 0.2);
+    // https://newdocs.phaser.io/docs/3.55.2/Phaser.GameObjects.Grid
+    let g1 = this.add.grid((this.mapTileSize*this.pixelSize/2), (this.mapTileSize*this.pixelSize/2), (this.mapTileSize*this.pixelSize), (this.mapTileSize*this.pixelSize), 16, 16, 0xff0000, 0.2);
   }
   //#endregion
 
