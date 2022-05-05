@@ -238,41 +238,43 @@ class Scene1 extends Phaser.Scene {
     }
   }
   whenKeyQPressed() {
-    let myArray = this.characterDatabase.characters;
+    if ((this.playerTurn && this.playerTurns != 0)) {
+      let myArray = this.characterDatabase.characters;
 
-    myArray.forEach(character => {
-      if (character.id == "player") {
-        // no need to do anything
-      }
-      else if (character.id != "player") {
-        this.currentEnemy = character;
-        this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-
-        if (this.playerCanAttackMelee) {
-          this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackMeleeDMG;
-          console.log("PLAYER MELEE ATTACKED ENEMY");
-          // if enemy has health =< 0, destroy them.
-          if (this.currentEnemy.health <= 0) {
-            this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
-          }
-          this.playerMoveFinished();
+      myArray.forEach(character => {
+        if (character.id == "player") {
+          // no need to do anything
         }
-        else {
-          this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id);
-          if (this.playerCanAttackRange) {
-            this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackRangeDMG;
-            console.log("PLAYER RANGE ATTACKED ENEMY");
+        else if (character.id != "player") {
+          this.currentEnemy = character;
+          this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+
+          if (this.playerCanAttackMelee) {
+            this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackMeleeDMG;
+            console.log("PLAYER MELEE ATTACKED ENEMY");
+            // if enemy has health =< 0, destroy them.
             if (this.currentEnemy.health <= 0) {
               this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
             }
             this.playerMoveFinished();
           }
           else {
-            console.log("You're not close enough for attack");
+            this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id);
+            if (this.playerCanAttackRange) {
+              this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackRangeDMG;
+              console.log("PLAYER RANGE ATTACKED ENEMY");
+              if (this.currentEnemy.health <= 0) {
+                this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+              }
+              this.playerMoveFinished();
+            }
+            else {
+              console.log("You're not close enough for attack");
+            }
           }
         }
-      }
-    });
+      });
+    }
   }
   //#endregion
 
@@ -351,18 +353,18 @@ class Scene1 extends Phaser.Scene {
     const characters = this.characterDatabase.characters;
 
     for (const character of characters) {
-        if (character.id !== 'player') {
-            this.currentEnemy = character;
-            this.enemyDoSomething(this.currentEnemy);
-            await timer(500);
-        }
+      if (character.id !== 'player') {
+        this.currentEnemy = character;
+        this.enemyDoSomething(this.currentEnemy);
+        await timer(500);
+      }
     }
 
     enemyTurnDone = true;
     if (enemyTurnDone) {
       this.resetPlayerTurn();
     }
-}
+  }
 
   enemyDoSomething(enemy) {
     let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
