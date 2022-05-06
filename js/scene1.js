@@ -66,6 +66,9 @@ class Scene1 extends Phaser.Scene {
   create() {
     console.log("Printing 'phaser.this': ", this);
 
+    this.registry.set("playerTurns", this.playerTurnsMax);
+    this.registry.set("playerHealth", this.playerHealth);
+
     //#region PLAYER INPUT CONTROLLER
     this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.keyUp.on("down", this.whenKeyUPPressed, this);
@@ -328,6 +331,9 @@ class Scene1 extends Phaser.Scene {
   //#region TURNBASED
 
   startGame() {
+    this.registry.set("playerTurns", this.playerTurnsMax);
+    this.registry.set("playerHealth", this.playerHealth);
+    
     this.musicSound.play();
     let characterArray = this.characterDatabase.characters;
 
@@ -401,6 +407,7 @@ class Scene1 extends Phaser.Scene {
   // Called after every player move.
   playerMoveFinished() {
     this.playerTurns--;
+    this.registry.set("playerTurns", this.playerTurns);
     this.updateTextInUI(this.playerTurnsUI);
     this.checkIfCanAttackAndEnableUI();
 
@@ -504,6 +511,7 @@ class Scene1 extends Phaser.Scene {
     console.log("ATTACK DMG: " + damage + " from " + this.currentEnemy.id);
     this.attackSound.play();
     this.playerHealth = this.playerHealth - damage;
+    this.registry.set("playerHealth", this.playerHealth);
     this.updateTextInUI(this.healthUI);
   }
 
