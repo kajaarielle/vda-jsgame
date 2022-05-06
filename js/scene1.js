@@ -53,9 +53,9 @@ class Scene1 extends Phaser.Scene {
     this.enemySpriteNames = ["dinosaur", "dinosaurPurple", "dragon"];
 
     //#region AUDIO
-      this.load.audio("music", ["audio/music.mp3"]);
-      this.load.audio("attack", ["audio/attack.mp3"]);
-      this.load.audio("walk", ["audio/walk.mp3"]);
+    this.load.audio("music", ["audio/music.mp3"]);
+    this.load.audio("attack", ["audio/attack.mp3"]);
+    this.load.audio("walk", ["audio/walk.mp3"]);
     //#endregion
 
     //#endregion
@@ -68,7 +68,7 @@ class Scene1 extends Phaser.Scene {
     this.playerTurn = true;
     this.moveSpeed = 16;
     this.playerHealth = 10;
-    this.debugMode = false;
+    this.debugMode = true;
     //#endregion
   }
 
@@ -111,7 +111,17 @@ class Scene1 extends Phaser.Scene {
     const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
     const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
 
-    //worldLayer.setCollisionByProperty({ ge_collide: true });
+    //#region TILEMAP COLLISION
+    // Make array of collisionLayers to enable setCollisionByProperty and debug collision
+    const collisionLayers = [worldLayer, fenceLayer];
+
+    // GridEngine detects the "ge_collide" property automatically, but for debugMode, we need to set the property
+    for (let i = 0; i < collisionLayers.length; i++) {
+      //const element = collisionLayers[i];
+      collisionLayers[i].setCollisionByProperty({ ge_collide: true });
+    }
+    //#endregion
+
     //#endregion
 
     //#region ADD CHARACTERS AS SPRITES
@@ -120,11 +130,10 @@ class Scene1 extends Phaser.Scene {
       "player"
     );
 
-    // randomize enemy sprites
-
-    this.numberOfEnemies = 4;
-
     //#region trying to autogen enemies
+    // https://youtu.be/o-kXzSCdGaU
+    // randomize enemy sprites
+    //  this.numberOfEnemies = 4;
     // for (let i = 0; i < this.numberOfEnemies; i++) {
     //   //const element = this.numberOfEnemies[i];
     //   let enemyName = 'this.enemySprite' + (i+1);
@@ -168,6 +177,7 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       this.enemySpriteNames[2]
     );
+    
 
     //#endregion
 
@@ -263,7 +273,16 @@ class Scene1 extends Phaser.Scene {
 
     //#region DEBUG MODE
     if (this.debugMode) {
-      this.drawGrid();
+      const debugGraphics = this.add.graphics().setAlpha(0.75);
+
+      // Just debugging the layers with collision
+      for (let i = 0; i < collisionLayers.length; i++) {
+        collisionLayers[i].renderDebug(debugGraphics, {
+          tileColor: null, // Color of non-colliding tiles
+          collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+          faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Color of colliding face edges
+        });
+      }
     }
     //#endregion
 
@@ -310,13 +329,10 @@ class Scene1 extends Phaser.Scene {
   }
   whenKeyQPressed() {
     if ((this.playerTurn && this.playerTurns != 0)) {
-      let myArray = this.characterDatabase.characters;
+      let characterArray = this.characterDatabase.characters;
 
-      myArray.forEach(character => {
-        if (character.id == "player") {
-          // no need to do anything
-        }
-        else if (character.id != "player") {
+      characterArray.forEach(character => {
+        if (character.id != "player") {
           this.currentEnemy = character;
           this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
 
@@ -354,9 +370,9 @@ class Scene1 extends Phaser.Scene {
   //#region TURNBASED
   startGame() {
     this.musicSound.play();
-    let myArray = this.characterDatabase.characters;
+    let characterArray = this.characterDatabase.characters;
 
-    myArray.forEach(character => {
+    characterArray.forEach(character => {
       if (character.id == "player") {
         this.playerRef = character;
       }
@@ -374,9 +390,9 @@ class Scene1 extends Phaser.Scene {
     this.inRangeMelee = 0;
     this.inRangeRange = 0;
 
-    let myArray = this.characterDatabase.characters;
+    let characterArray = this.characterDatabase.characters;
 
-    myArray.forEach(character => {
+    characterArray.forEach(character => {
       if (character.id != "player") {
         this.currentEnemy = character;
 
@@ -573,10 +589,10 @@ class Scene1 extends Phaser.Scene {
     let flipX;
 
     if (direction == "left") {
-      flipX = false;
+      flipX = true;
     }
     if (direction == "right") {
-      flipX = true;
+      flipX = false;
     }
 
     this.setThisSprite.flipX = flipX;
