@@ -41,16 +41,14 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 24,
       }
     );
-    //#endregion
-
     this.enemySpriteNames = ["dragon"];
+    //#endregion
 
     //#region AUDIO
     this.load.audio("music", ["audio/music.mp3"]);
     this.load.audio("attack", ["audio/attack.mp3"]);
     this.load.audio("walk", ["audio/walk.mp3"]);
     //#endregion
-
     //#endregion
 
     //#region SET VARIABLES
@@ -69,7 +67,6 @@ class Scene1 extends Phaser.Scene {
     console.log("Printing 'phaser.this': ", this);
 
     //#region PLAYER INPUT CONTROLLER
-    // Basic move button
     this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.keyUp.on("down", this.whenKeyUPPressed, this);
     this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
@@ -93,8 +90,7 @@ class Scene1 extends Phaser.Scene {
     // "name of tileset in Tiled", "name of phaser tileset reference"
     const tileset = tileMap.addTilesetImage("tileset", "tileSet");
     const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
-    // layer names from Tiled, tileset, x, y
-    // https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
+    // layer names from Tiled ( tileset, x, y ) https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
     const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
     const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
     const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
@@ -106,7 +102,6 @@ class Scene1 extends Phaser.Scene {
 
     // GridEngine detects the "ge_collide" property automatically, but for debugMode, we need to set the property
     for (let i = 0; i < collisionLayers.length; i++) {
-      //const element = collisionLayers[i];
       collisionLayers[i].setCollisionByProperty({ ge_collide: true });
     }
     //#endregion
@@ -228,9 +223,8 @@ class Scene1 extends Phaser.Scene {
         },
       ],
     };
-    this.characterDatabase = this.gridEngineConfig;
-    console.log(this.characterDatabase);
 
+    this.characterDatabase = this.gridEngineConfig;
     this.gridEngine.create(tileMap, this.gridEngineConfig);
     //#endregion
 
@@ -243,7 +237,6 @@ class Scene1 extends Phaser.Scene {
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
     this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.playerHealth).setScrollFactor(0);
     this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
-
     //#endregion
 
     //#region DEBUG MODE
@@ -270,8 +263,7 @@ class Scene1 extends Phaser.Scene {
   //#region CUSTOM FUNCTIONS
 
   //#region CONTROLLER FUNCTIONS
-
-  // check if the player actually moves !!!
+  // TODO: check if the player actually moves, otherwise a turn still goes !!!
   whenKeyUPPressed() {
     if (this.playerTurn && this.playerTurns != 0) {
       this.walkSound.play();
@@ -290,7 +282,6 @@ class Scene1 extends Phaser.Scene {
     if (this.playerTurn && this.playerTurns != 0) {
       this.walkSound.play();
       this.gridEngine.move("player", "left");
-      //this.flipSprite(this.playerRef.sprite, "left");
       this.playerMoveFinished();
     }
   }
@@ -298,12 +289,12 @@ class Scene1 extends Phaser.Scene {
     if (this.playerTurn && this.playerTurns != 0) {
       this.walkSound.play();
       this.gridEngine.move("player", "right");
-      //this.flipSprite(this.playerRef.sprite, "right");
       this.playerMoveFinished();
     }
   }
   whenKeyQPressed() {
     if ((this.playerTurn && this.playerTurns != 0)) {
+      // Check if the player is in range to any enemies for each enemy character
       let characterArray = this.characterDatabase.characters;
 
       characterArray.forEach(character => {
@@ -312,22 +303,18 @@ class Scene1 extends Phaser.Scene {
           this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
 
           if (this.playerCanAttackMelee) {
-            this.attackSound.play();
-            this.currentEnemy.health.current = this.currentEnemy.health.current - this.playerRef.attack.meleeDMG;
-            console.log("PLAYER MELEE ATTACKED ENEMY");
-            // if enemy has health =< 0, destroy them.
-            this.checkIfEnemyDead();
+            this.dealDamageToEnemy(this.playerRef.attack.meleeDMG);
             this.playerMoveFinished();
           }
+
           else {
             this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
+
             if (this.playerCanAttackRange) {
-              this.attackSound.play();
-              this.currentEnemy.health.current = this.currentEnemy.health.current - this.playerRef.attack.rangeDMG;
-              console.log("PLAYER RANGE ATTACKED ENEMY");
-              this.checkIfEnemyDead();
+              this.dealDamageToEnemy(this.playerRef.attack.rangeDMG);
               this.playerMoveFinished();
             }
+
             else {
               console.log("You're not close enough for attack");
             }
@@ -336,15 +323,10 @@ class Scene1 extends Phaser.Scene {
       });
     }
   }
-  checkIfEnemyDead() {
-    if (this.currentEnemy.health.current <= 0) {
-      this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
-    }
-  }
-
   //#endregion
 
   //#region TURNBASED
+
   startGame() {
     this.musicSound.play();
     let characterArray = this.characterDatabase.characters;
@@ -358,14 +340,14 @@ class Scene1 extends Phaser.Scene {
     this.playerMoveBegin();
   }
 
+  //#region PLAYER TURN
   playerMoveBegin() {
-    this.canMove = true;
     this.checkIfCanAttackAndEnableUI();
   }
 
   checkIfCanAttackAndEnableUI() {
-    this.inRangeMelee = 0;
-    this.inRangeRange = 0;
+    let inRangeMelee = 0;
+    let inRangeRange = 0;
 
     let characterArray = this.characterDatabase.characters;
 
@@ -374,38 +356,56 @@ class Scene1 extends Phaser.Scene {
         this.currentEnemy = character;
 
         if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
-          this.inRangeMelee++;
-          //this.attackSound.play();
+          inRangeMelee++;
         }
+
         if (this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id)) {
-          this.inRangeRange++;
-          //this.attackSound.play();
+          inRangeRange++;
         }
       }
     });
-    if (this.inRangeMelee > 0 || this.inRangeRange > 0) {
+
+    if (inRangeMelee > 0 || inRangeRange > 0) {
       this.visibilityUI(this.attackUI, true);
-      //console.log("in range");
-      //console.log(this.inRangeMelee + this.inRangeRange);
     }
-    // else if (this.inRangeRange > 0) {
-    //   this.visibilityUI(this.attackUI, true);
-    //   console.log("in range range");
-    // }
+
     else {
       this.visibilityUI(this.attackUI, false);
-      //console.log("not in range");
     }
+  }
+
+  dealDamageToEnemy(damage) {
+    this.attackSound.play();
+    this.currentEnemy.health.current = this.currentEnemy.health.current - damage;
+    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentEnemy.health.current);
+    this.checkIfEnemyDead();
+  }
+
+  checkIfEnemyDead() {
+    if (this.currentEnemy.health.current <= 0) {
+      this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+    }
+  }
+
+  killCharacterAndSprite(character, sprite) {
+    this.gridEngine.removeCharacter(character);
+    console.log(this.gridEngine.getAllCharacters());
+    this.setThisSprite = sprite;
+    this.setThisSprite.destroy();
+
+    // remove data from array
+    const removeFromDatabase = this.characterDatabase.characters.findIndex(item => item.id === character);
+    this.characterDatabase.characters.splice(removeFromDatabase, 1);
   }
 
   // Called after every player move.
   playerMoveFinished() {
     this.playerTurns--;
-    this.setPlayerTurnsUI();
+    this.updateTextInUI(this.playerTurnsUI);
     this.checkIfCanAttackAndEnableUI();
 
+    // If no more turns, end player turn.
     if (this.playerTurns == 0) {
-      // If no more turns, end player turn.
       this.endPlayerTurn();
     }
   }
@@ -415,10 +415,11 @@ class Scene1 extends Phaser.Scene {
     this.playerTurn = false;
     this.enemyTurn();
   }
+  //#endregion
 
+  //#region ENEMY TURN
   async enemyTurn() {
     let enemyTurnDone = false;
-
     const characters = this.characterDatabase.characters;
 
     for (const character of characters) {
@@ -436,53 +437,30 @@ class Scene1 extends Phaser.Scene {
   }
 
   enemyDoSomething(enemy) {
-    let movesPossible = 0;
-
     let canMove = true;
     let canHeal = false;
     let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attack.range, this.currentEnemy.id);
-    console.log(this.currentEnemy.id + " canAttackRange: " + canAttackRange);
     let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-    console.log(this.currentEnemy.id + " canAttackMelee: " + canAttackMelee);
 
-    if (this.currentEnemy.health.current != this.currentEnemy.health.max) {
+    if (this.currentEnemy.health.current != this.currentEnemy.health.max)
       canHeal = true;
-    }
 
     let possibleMoves = [];
 
-    // empty array
-    // if true, array.push
-      
-    if (canMove) { 
-      //movesPossible++; 
+    if (canMove)
       possibleMoves.push("canMove");
-    }
-    if (canAttackRange) { 
-      // movesPossible++; 
+    if (canAttackRange)
       possibleMoves.push("canAttackRange");
-    }
-    if (canAttackMelee) { 
-      // movesPossible++; 
+    if (canAttackMelee)
       possibleMoves.push("canAttackMelee");
-    }
-    if (canHeal) { 
-      // movesPossible++; 
+    if (canHeal)
       possibleMoves.push("canHeal");
-    }
+
     let randomMove = Phaser.Math.RND.pick(possibleMoves);
-    console.log(randomMove);
-      
-    // let randomMove = this.getRandomIntFromMax(movesPossible);
-    // console.log(randomMove + " out of " + movesPossible);
-
-
-
 
     if (randomMove == "canMove") {
-      // let isTileBlockedUp = this.gridEngine.isBlocked(this.currentEnemy.x, this.currentEnemy.y + 1); 
-      // console.log(isTileBlockedUp);
-      // check if the character can move in x direction, if they can, make it possible move
+      // check if the character can move in x direction, if they can, make it possible move. 
+      // https://annoraaq.github.io/grid-engine/typedoc/classes/GridEngine.html#isTileBlocked
 
       switch (this.getRandomIntFromMax(4)) {
         case 0:
@@ -504,22 +482,16 @@ class Scene1 extends Phaser.Scene {
           this.gridEngine.move(this.currentEnemy.id, "down");
           break;
       }
-      //console.log("This is after said character move");
     }
+
     else if (randomMove == "canAttackRange") {
       //attack range
-      console.log("RANGE ATTACK from " + this.currentEnemy.id);
-      this.attackSound.play();
-      this.playerHealth = this.playerHealth - this.currentEnemy.attack.rangeDMG;
-      this.updateHealthUI();
+      this.dealDamageToPlayer(this.currentEnemy.attack.rangeDMG);
     }
 
     else if (randomMove == "canAttackMelee") {
       // attack melee
-      console.log("MELEE ATTACK from " + this.currentEnemy.id);
-      this.attackSound.play();
-      this.playerHealth = this.playerHealth - this.currentEnemy.attack.meleeDMG;
-      this.updateHealthUI();
+      this.dealDamageToPlayer(this.currentEnemy.attack.meleeDMG);
     }
 
     else if (randomMove == "canHeal") {
@@ -528,25 +500,32 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
+  dealDamageToPlayer(damage) {
+    console.log("ATTACK DMG: " + damage + " from " + this.currentEnemy.id);
+    this.attackSound.play();
+    this.playerHealth = this.playerHealth - damage;
+    this.updateTextInUI(this.healthUI);
+  }
+
   resetPlayerTurn() {
     this.playerTurn = true;
     this.playerTurns = this.playerTurnsMax;
-    this.setPlayerTurnsUI();
+    this.updateTextInUI(this.playerTurnsUI);
     this.playerMoveBegin();
   }
+  //#endregion
+  //#endregion
 
+  //#region OTHER FUNCTIONS
   checkRangeOverlap(range, enemy) {
-    // check overlap range, use character and range
     let rangeOverlap;
 
     let playerPos = this.gridEngine.getPosition("player");
     let enemyPos = this.gridEngine.getPosition(enemy);
     let diffX = this.getDifference(enemyPos.x, playerPos.x);
     let diffY = this.getDifference(enemyPos.y, playerPos.y);
-    //console.log(diffX);
 
     if (diffX <= range && diffY <= range) {
-      //console.log("IN RANGE");
       return rangeOverlap = true;
     }
     else {
@@ -558,42 +537,6 @@ class Scene1 extends Phaser.Scene {
     return Math.abs(a - b);
   }
 
-  killCharacterAndSprite(character, sprite) {
-    this.gridEngine.removeCharacter(character);
-    console.log(this.gridEngine.getAllCharacters());
-    this.setThisSprite = sprite;
-    this.setThisSprite.destroy();
-
-    // remove data from array
-    const removeFromDatabase = this.characterDatabase.characters.findIndex(item => item.id === character);
-    this.characterDatabase.characters.splice(removeFromDatabase, 1);
-
-  }
-  //#endregion
-
-  //#region UI
-  setPlayerTurnsUI() {
-    this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
-  }
-  updateHealthUI() {
-    this.healthUI.setText('Health: ' + this.playerHealth);
-  }
-
-  visibilityUI(nameUI, visibility) {
-    let visible = visibility;
-    this.setThisUI = nameUI;
-
-    if (visible == true) {
-      this.setThisUI.visible = true;
-    }
-    else if (visible == false) {
-      this.setThisUI.visible = false;
-    }
-  }
-  //#endregion
-
-
-  //#region OTHER FUNCTIONS
   flipSprite(sprite, direction) {
     this.setThisSprite = sprite;
     let flipX;
@@ -607,24 +550,32 @@ class Scene1 extends Phaser.Scene {
 
     this.setThisSprite.flipX = flipX;
   }
-  spawn(gridPlacement, offset) {
-    const gridSize = 16;
-    const place = gridPlacement * gridSize - offset;
-    return place;
-  }
+
   getRandomIntFromMax(max) {
     return Math.floor(Math.random() * max);
   }
   //#endregion
 
-  //#region DEBUG
-  drawGrid() {
-    // https://phaser.io/examples/v3/view/game-objects/shapes/grid
-    // https://newdocs.phaser.io/docs/3.55.2/Phaser.GameObjects.Grid
-    let g1 = this.add.grid((this.mapTileSize * this.pixelSize / 2), (this.mapTileSize * this.pixelSize / 2), (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize), 16, 16, 0xff0000, 0.2);
+  //#region UI
+  updateTextInUI(nameUI) {
+    if (nameUI == this.playerTurnsUI)
+      this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
+    if (nameUI == this.healthUI)
+      this.healthUI.setText('Health: ' + this.playerHealth);
+  }
+
+  visibilityUI(nameUI, visibility) {
+    let visible = visibility;
+    this.setThisUI = nameUI;
+
+    if (visible) {
+      this.setThisUI.visible = true;
+    }
+    else {
+      this.setThisUI.visible = false;
+    }
   }
   //#endregion
-
   //#endregion
 }
 
