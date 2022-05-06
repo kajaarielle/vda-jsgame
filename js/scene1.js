@@ -68,7 +68,7 @@ class Scene1 extends Phaser.Scene {
     this.playerTurn = true;
     this.moveSpeed = 16;
     this.playerHealth = 10;
-    this.debugMode = true;
+    this.debugMode = false;
     //#endregion
   }
 
