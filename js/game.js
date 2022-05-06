@@ -2,7 +2,7 @@ var config = {
     type: Phaser.AUTO,
     parent: "phaser-example",
     backgroundColor: "#0055aa",
-    scene: [Scene1],
+    scene: [Scene1, SceneUI],
     width: 256,
     height: 256,
     zoom: 3,

@@ -5,7 +5,7 @@ const timer = ms => new Promise(res => setTimeout(res, ms))
 class Scene1 extends Phaser.Scene {
   constructor() {
     super({
-      key: "scene1",
+      key: "scene1", active: true
     });
   }
 
