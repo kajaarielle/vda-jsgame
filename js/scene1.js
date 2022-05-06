@@ -222,6 +222,7 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          maxHealth: 5,
           health: 5,
         },
         {
@@ -231,6 +232,7 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          maxHealth: 5,
           health: 5,
         },
         {
@@ -240,6 +242,7 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          maxHealth: 5,
           health: 5,
         },
         {
@@ -249,6 +252,7 @@ class Scene1 extends Phaser.Scene {
           attackMeleeDMG: 2,
           attackRange: 2,
           attackRangeDMG: 1,
+          maxHealth: 5,
           health: 5,
         },
       ],
@@ -459,21 +463,51 @@ class Scene1 extends Phaser.Scene {
   }
 
   enemyDoSomething(enemy) {
-    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
-    let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-    let canMove = true;
     let movesPossible = 0;
 
-    if (canMove)
-      movesPossible++;
-    if (canAttackRange)
-      movesPossible++;
-    if (canAttackMelee)
-      movesPossible++;
+    let canMove = true;
+    let canHeal = false;
+    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
+    console.log(this.currentEnemy.id + " canAttackRange: " + canAttackRange);
+    let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+    console.log(this.currentEnemy.id + " canAttackMelee: " + canAttackMelee);
 
-    let randomMove = this.getRandomIntFromMax(movesPossible);
+    if (this.currentEnemy.health != this.currentEnemy.maxHealth) {
+      canHeal = true;
+    }
+    console.log(canHeal + " heal: " + this.currentEnemy.health);
 
-    if (randomMove == 0) {
+    let possibleMoves = [];
+
+    // empty array
+    // if true, array.push
+      
+    if (canMove) { 
+      //movesPossible++; 
+      possibleMoves.push("canMove");
+    }
+    if (canAttackRange) { 
+      // movesPossible++; 
+      possibleMoves.push("canAttackRange");
+    }
+    if (canAttackMelee) { 
+      // movesPossible++; 
+      possibleMoves.push("canAttackMelee");
+    }
+    if (canHeal) { 
+      // movesPossible++; 
+      possibleMoves.push("canHeal");
+    }
+    let randomMove = Phaser.Math.RND.pick(possibleMoves);
+    console.log(randomMove);
+      
+    // let randomMove = this.getRandomIntFromMax(movesPossible);
+    // console.log(randomMove + " out of " + movesPossible);
+
+
+
+
+    if (randomMove == "canMove") {
       // let isTileBlockedUp = this.gridEngine.isBlocked(this.currentEnemy.x, this.currentEnemy.y + 1); 
       // console.log(isTileBlockedUp);
       // check if the character can move in x direction, if they can, make it possible move
@@ -500,21 +534,25 @@ class Scene1 extends Phaser.Scene {
       }
       //console.log("This is after said character move");
     }
-    else if (randomMove == 1) {
+    else if (randomMove == "canAttackRange") {
       //attack range
-      console.log("RANGE ATTACK");
+      console.log("RANGE ATTACK from " + this.currentEnemy.id);
       this.attackSound.play();
       this.playerHealth = this.playerHealth - this.currentEnemy.attackRangeDMG;
       this.updateHealthUI();
     }
 
-    else if (randomMove == 2) {
+    else if (randomMove == "canAttackMelee") {
       // attack melee
-      console.log("MELEE ATTACK");
+      console.log("MELEE ATTACK from " + this.currentEnemy.id);
       this.attackSound.play();
       this.playerHealth = this.playerHealth - this.currentEnemy.attackMeleeDMG;
       this.updateHealthUI();
+    }
 
+    else if (randomMove == "canHeal") {
+      this.currentEnemy.health = this.currentEnemy.health + 1;
+      console.log("Enemy healed! " + this.currentEnemy.id);
     }
   }
 
