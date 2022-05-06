@@ -4,7 +4,7 @@
   <export target="../source/tileMap.json" format="json"/>
  </editorsettings>
  <tileset firstgid="1" name="tileset" tilewidth="16" tileheight="16" tilecount="64" columns="8">
-  <image source="../images/tileset.png" trans="ff00ff" width="128" height="128"/>
+  <image source="../../images/tileset.png" trans="ff00ff" width="128" height="128"/>
   <tile id="0">
    <properties>
     <property name="ge_collide" type="bool" value="false"/>
@@ -207,7 +207,7 @@
   </tile>
  </tileset>
  <tileset firstgid="65" name="tileset-sproutland" tilewidth="16" tileheight="16" tilecount="576" columns="24">
-  <image source="../images/tileset-sproutland.png" trans="ff00ff" width="384" height="384"/>
+  <image source="../../images/tileset-sproutland.png" trans="ff00ff" width="384" height="384"/>
   <tile id="0">
    <properties>
     <property name="ge_collide" type="bool" value="false"/>
