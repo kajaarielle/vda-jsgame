@@ -93,9 +93,6 @@ class Scene1 extends Phaser.Scene {
     // "name of tileset in Tiled", "name of phaser tileset reference"
     const tileset = tileMap.addTilesetImage("tileset", "tileSet");
     const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
-    // for (let i = 0; i < gameTilemap.layers.length; i++) {
-    //   const layer = game.createLayer(i, "Game Map", 0, 0);
-    // }
     // layer names from Tiled, tileset, x, y
     // https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
     const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
@@ -104,7 +101,6 @@ class Scene1 extends Phaser.Scene {
     const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
     const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
 
-    //#region TILEMAP COLLISION
     // Make array of collisionLayers to enable setCollisionByProperty and debug collision
     const collisionLayers = [worldLayer, fenceLayer];
 
@@ -115,63 +111,27 @@ class Scene1 extends Phaser.Scene {
     }
     //#endregion
 
-    //#endregion
-
     //#region ADD CHARACTERS AS SPRITES
     this.playerSprite = this.add.sprite(
       0, 0,
       "player"
     );
-
-    //#region trying to autogen enemies
-    // https://youtu.be/o-kXzSCdGaU
-    // randomize enemy sprites
-    //  this.numberOfEnemies = 4;
-    // for (let i = 0; i < this.numberOfEnemies; i++) {
-    //   //const element = this.numberOfEnemies[i];
-    //   let enemyName = 'this.enemySprite' + (i+1);
-    //   let randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
-    //   enemyName = this.add.sprite(
-    //     0, 0,
-    //     this.enemySpriteNames[randomEnemy]
-    //   );
-    //   console.log(enemyName);
-    // }
-    // for (let i = 0; i < this.numberOfEnemies; i++) {
-
-    //   let enemyName = "enemySprite" + (i+1);
-    //   let randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
-    //   this.enemyName = this.add.sprite(
-    //     0, 0,
-    //     this.enemySpriteNames[randomEnemy]
-    //   );
-    //   console.log(enemyName);
-    //   // more statements
-    // }
-    //#endregion
-
-    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite1 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[2]
+      this.enemySpriteNames[0]
     );
-    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite2 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[2]
+      this.enemySpriteNames[0]
     );
-    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite3 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[2]
+      this.enemySpriteNames[0]
     );
-    //this.randomEnemy = this.getRandomIntFromMax(this.enemySpriteNames.length);
     this.enemySprite4 = this.add.sprite(
       0, 0,
-      this.enemySpriteNames[2]
+      this.enemySpriteNames[0]
     );
-    
-
     //#endregion
 
     //#region GRID ENGINE CONFIG
