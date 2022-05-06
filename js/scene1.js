@@ -10,10 +10,9 @@ class Scene1 extends Phaser.Scene {
   }
 
   preload() {
-    //#region LOAD
-    // LOAD RESOURCES
+    //#region LOAD RESOURCES
 
-    // TILESET
+    //#region TILEMAP
     this.load.image(
       "tileSet",
       "images/tileset.png"
@@ -23,8 +22,9 @@ class Scene1 extends Phaser.Scene {
       "images/tileset-sproutland.png"
     );
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
+    //#endregion
 
-    // PLAYER CHARACTER
+    //#region CHARACTERS
     this.load.spritesheet(
       "player",
       "images/cat-spritesheet.png",
@@ -41,16 +41,9 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 24,
       }
     );
-    this.load.image(
-      "dinosaur",
-      "images/dinosaur.png"
-    );
-    this.load.image(
-      "dinosaurPurple",
-      "images/dinosaur-purple.png"
-    );
+    //#endregion
 
-    this.enemySpriteNames = ["dinosaur", "dinosaurPurple", "dragon"];
+    this.enemySpriteNames = ["dragon"];
 
     //#region AUDIO
     this.load.audio("music", ["audio/music.mp3"]);
@@ -211,49 +204,67 @@ class Scene1 extends Phaser.Scene {
           },
           startPosition: { x: 2, y: 2 },
           offsetY: 16,
-          attackMeleeDMG: 3,
-          attackRange: 3,
-          attackRangeDMG: 2,
+          attack: {
+            range: 3,
+            meleeDMG: 3,
+            rangeDMG: 2,
+          },
         },
         {
           id: "enemy1",
           sprite: this.enemySprite1,
           startPosition: { x: 5, y: 7 },
-          attackMeleeDMG: 2,
-          attackRange: 2,
-          attackRangeDMG: 1,
-          maxHealth: 5,
-          health: 5,
+          attack: {
+            range: 2,
+            meleeDMG: 2,
+            rangeDMG: 1,
+          },
+          health: {
+            max: 5,
+            current: 5,
+          },
         },
         {
           id: "enemy2",
           sprite: this.enemySprite2,
           startPosition: { x: 12, y: 10 },
-          attackMeleeDMG: 2,
-          attackRange: 2,
-          attackRangeDMG: 1,
-          maxHealth: 5,
-          health: 5,
+          attack: {
+            range: 2,
+            meleeDMG: 2,
+            rangeDMG: 1,
+          },
+          health: {
+            max: 5,
+            current: 5,
+          },
         },
         {
           id: "enemy3",
           sprite: this.enemySprite3,
           startPosition: { x: 6, y: 14 },
-          attackMeleeDMG: 2,
-          attackRange: 2,
-          attackRangeDMG: 1,
-          maxHealth: 5,
-          health: 5,
+          attack: {
+            range: 2,
+            meleeDMG: 2,
+            rangeDMG: 1,
+          },
+          health: {
+            max: 5,
+            current: 5,
+          },
         },
         {
           id: "enemy4",
           sprite: this.enemySprite4,
           startPosition: { x: 14, y: 5 },
-          attackMeleeDMG: 2,
-          attackRange: 2,
-          attackRangeDMG: 1,
-          maxHealth: 5,
-          health: 5,
+          attack: {
+            range: 2,
+            meleeDMG: 2,
+            rangeDMG: 1,
+          },
+          health: {
+            max: 5,
+            current: 5,
+          },
         },
       ],
     };
@@ -342,23 +353,19 @@ class Scene1 extends Phaser.Scene {
 
           if (this.playerCanAttackMelee) {
             this.attackSound.play();
-            this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackMeleeDMG;
+            this.currentEnemy.health.current = this.currentEnemy.health.current - this.playerRef.attack.meleeDMG;
             console.log("PLAYER MELEE ATTACKED ENEMY");
             // if enemy has health =< 0, destroy them.
-            if (this.currentEnemy.health <= 0) {
-              this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
-            }
+            this.checkIfEnemyDead();
             this.playerMoveFinished();
           }
           else {
-            this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id);
+            this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
             if (this.playerCanAttackRange) {
               this.attackSound.play();
-              this.currentEnemy.health = this.currentEnemy.health - this.playerRef.attackRangeDMG;
+              this.currentEnemy.health.current = this.currentEnemy.health.current - this.playerRef.attack.rangeDMG;
               console.log("PLAYER RANGE ATTACKED ENEMY");
-              if (this.currentEnemy.health <= 0) {
-                this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
-              }
+              this.checkIfEnemyDead();
               this.playerMoveFinished();
             }
             else {
@@ -369,6 +376,12 @@ class Scene1 extends Phaser.Scene {
       });
     }
   }
+  checkIfEnemyDead() {
+    if (this.currentEnemy.health.current <= 0) {
+      this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+    }
+  }
+
   //#endregion
 
   //#region TURNBASED
@@ -404,7 +417,7 @@ class Scene1 extends Phaser.Scene {
           this.inRangeMelee++;
           //this.attackSound.play();
         }
-        if (this.checkRangeOverlap(this.playerRef.attackRange, this.currentEnemy.id)) {
+        if (this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id)) {
           this.inRangeRange++;
           //this.attackSound.play();
         }
@@ -467,15 +480,14 @@ class Scene1 extends Phaser.Scene {
 
     let canMove = true;
     let canHeal = false;
-    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attackRange, this.currentEnemy.id);
+    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attack.range, this.currentEnemy.id);
     console.log(this.currentEnemy.id + " canAttackRange: " + canAttackRange);
     let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
     console.log(this.currentEnemy.id + " canAttackMelee: " + canAttackMelee);
 
-    if (this.currentEnemy.health != this.currentEnemy.maxHealth) {
+    if (this.currentEnemy.health.current != this.currentEnemy.health.max) {
       canHeal = true;
     }
-    console.log(canHeal + " heal: " + this.currentEnemy.health);
 
     let possibleMoves = [];
 
@@ -538,7 +550,7 @@ class Scene1 extends Phaser.Scene {
       //attack range
       console.log("RANGE ATTACK from " + this.currentEnemy.id);
       this.attackSound.play();
-      this.playerHealth = this.playerHealth - this.currentEnemy.attackRangeDMG;
+      this.playerHealth = this.playerHealth - this.currentEnemy.attack.rangeDMG;
       this.updateHealthUI();
     }
 
@@ -546,12 +558,12 @@ class Scene1 extends Phaser.Scene {
       // attack melee
       console.log("MELEE ATTACK from " + this.currentEnemy.id);
       this.attackSound.play();
-      this.playerHealth = this.playerHealth - this.currentEnemy.attackMeleeDMG;
+      this.playerHealth = this.playerHealth - this.currentEnemy.attack.meleeDMG;
       this.updateHealthUI();
     }
 
     else if (randomMove == "canHeal") {
-      this.currentEnemy.health = this.currentEnemy.health + 1;
+      this.currentEnemy.health.current = this.currentEnemy.health.current + 1;
       console.log("Enemy healed! " + this.currentEnemy.id);
     }
   }
