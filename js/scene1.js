@@ -255,9 +255,10 @@ class Scene1 extends Phaser.Scene {
     //#endregion
 
     //#region UI
-    this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns);
-    this.attackUI = this.add.text(0, 24, 'ATTACK');
-    this.healthUI = this.add.text(0, 54, 'HEALTH:' + this.playerHealth);
+    this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
+    this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.playerHealth).setScrollFactor(0);
+    this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
+
     //#endregion
 
     //#region DEBUG MODE
