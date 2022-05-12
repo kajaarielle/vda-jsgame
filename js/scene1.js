@@ -27,7 +27,7 @@ class Scene1 extends Phaser.Scene {
     //#region CHARACTERS
     this.load.spritesheet(
       "player",
-      "images/cat-spritesheet.png",
+      "images/cat-spritesheet-all.png",
       {
         frameWidth: 48,
         frameHeight: 48,
@@ -57,7 +57,6 @@ class Scene1 extends Phaser.Scene {
     this.playerTurnsMax = 5;
     this.playerTurns = this.playerTurnsMax;
     this.playerTurn = true;
-    this.moveSpeed = 16;
     this.playerHealth = 10;
     this.debugMode = false;
     //#endregion
@@ -114,6 +113,12 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       "player"
     );
+    this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
+    this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
+    this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
+    this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+
+
     this.enemySprite1 = this.add.sprite(
       0, 0,
       this.enemySpriteNames[0]
@@ -140,24 +145,24 @@ class Scene1 extends Phaser.Scene {
           sprite: this.playerSprite,
           walkingAnimationMapping: {
             up: {
-              leftFoot: 6,
-              standing: 5,
-              rightFoot: 7,
+              leftFoot: 4,
+              standing: 3,
+              rightFoot: 5,
             },
             down: {
-              leftFoot: 2,
-              standing: 1,
-              rightFoot: 3,
+              leftFoot: 1,
+              standing: 0,
+              rightFoot: 2,
             },
             left: {
+              leftFoot: 7,
+              standing: 6,
+              rightFoot: 8,
+            },
+            right: {
               leftFoot: 10,
               standing: 9,
               rightFoot: 11,
-            },
-            right: {
-              leftFoot: 14,
-              standing: 13,
-              rightFoot: 15,
             },
           },
           startPosition: { x: 2, y: 2 },
@@ -264,6 +269,18 @@ class Scene1 extends Phaser.Scene {
   }
 
   //#region CUSTOM FUNCTIONS
+  createPlayerAnimation(name, startFrame, endFrame) {
+    this.anims.create({
+      key: name,
+      frames: this.anims.generateFrameNumbers("player", {
+        start: startFrame,
+        end: endFrame,
+      }),
+      frameRate: 6,
+      repeat: 0,
+      yoyo: true,
+    });
+  }
 
   //#region CONTROLLER FUNCTIONS
   // TODO: check if the player actually moves, otherwise a turn still goes !!!
@@ -306,6 +323,8 @@ class Scene1 extends Phaser.Scene {
           this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
 
           if (this.playerCanAttackMelee) {
+            let direction = this.getPlayerDirectionBeforeAttack;
+            this.playAttackAnimation("melee");
             this.dealDamageToEnemy(this.playerRef.attack.meleeDMG);
             this.playerMoveFinished();
           }
@@ -327,6 +346,20 @@ class Scene1 extends Phaser.Scene {
     }
   }
   //#endregion
+
+  playAttackAnimation(attackType) {
+    let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
+    let melee = "MeleeAttack";
+    let range = "RangeAttack";
+    console.log(direction);
+
+    if(attackType == "melee") {
+      this.playerSprite.anims.play(direction + melee);
+    }
+    if(attackType == "range") {
+      this.playerSprite.anims.play(direction + range);
+    }
+  }
 
   //#region TURNBASED
 
