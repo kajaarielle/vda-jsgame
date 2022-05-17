@@ -42,6 +42,11 @@ class Scene1 extends Phaser.Scene {
       }
     );
     this.enemySpriteNames = ["dragon"];
+
+    this.load.image(
+      "bullet",
+      "images/bullet.png"
+    );
     //#endregion
 
     //#region AUDIO
@@ -117,6 +122,7 @@ class Scene1 extends Phaser.Scene {
     this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
     this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
     this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+    
 
 
     this.enemySprite1 = this.add.sprite(
@@ -135,6 +141,10 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       this.enemySpriteNames[0]
     );
+
+
+
+    this.bullets = new Bullets(this);
     //#endregion
 
     //#region GRID ENGINE CONFIG
@@ -281,6 +291,18 @@ class Scene1 extends Phaser.Scene {
       yoyo: true,
     });
   }
+  createEnemyAnimation(character, name, startFrame, endFrame) {
+    this.anims.create({
+      key: name,
+      frames: this.anims.generateFrameNumbers(character, {
+        start: startFrame,
+        end: endFrame,
+      }),
+      frameRate: 6,
+      repeat: 0,
+      yoyo: true,
+    });
+  }
 
   //#region CONTROLLER FUNCTIONS
   // TODO: check if the player actually moves, otherwise a turn still goes !!!
@@ -333,6 +355,7 @@ class Scene1 extends Phaser.Scene {
             this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
 
             if (this.playerCanAttackRange) {
+              this.playAttackAnimation("range");
               this.dealDamageToEnemy(this.playerRef.attack.rangeDMG);
               this.playerMoveFinished();
             }
@@ -353,11 +376,16 @@ class Scene1 extends Phaser.Scene {
     let range = "RangeAttack";
     console.log(direction);
 
-    if(attackType == "melee") {
+    if (attackType == "melee") {
       this.playerSprite.anims.play(direction + melee);
     }
-    if(attackType == "range") {
-      this.playerSprite.anims.play(direction + range);
+    if (attackType == "range") {
+      // this.playerSprite.anims.play(direction + range);
+
+      let playerX = this.playerSprite.x + 24;
+      let playerY = this.playerSprite.y + 24;
+      this.bullets.fireBullet(playerX, playerY);
+
     }
   }
 
@@ -366,7 +394,7 @@ class Scene1 extends Phaser.Scene {
   startGame() {
     this.registry.set("playerTurns", this.playerTurnsMax);
     this.registry.set("playerHealth", this.playerHealth);
-    
+
     this.musicSound.play();
     let characterArray = this.characterDatabase.characters;
 
