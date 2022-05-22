@@ -1,0 +1,203 @@
+What i'm trying to do:
+
+
+
+create function:
+
+this.player = this.generatePlayer();
+
+this.playerAttacks = this.generateAttacks('sword', 1);
+this.playerSpells = this.generateAttacks('spell', 1);
+
+playMusic
+
+
+update function
+this.playerHandler();
+
+---
+generatePlayer: function () {
+
+        // Generate the player
+        var player = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'characters');
+
+        // Loop through frames 3, 4, and 5 at 10 frames a second while the animation is playing
+        player.animations.add('down', [3, 4, 5], 10, true);
+        player.animations.add('left', [15, 16, 17], 10, true);
+        player.animations.add('right', [27, 28, 29], 10, true);
+        player.animations.add('up', [39, 40, 41], 10, true);
+        player.animations.play('down');
+        player.scale.setTo(2);
+
+        // Enable player physics;
+        this.game.physics.arcade.enable(player);
+        player.body.collideWorldBounds = true
+        player.alive = true;
+
+        player.name = 'Theodoric';
+        player.level = 1;
+
+        player.health = 100;
+        player.vitality = 100;
+        player.strength = 25;
+        player.speed = 125;
+
+        player.invincibilityFrames = 500;
+        player.invincibilityTime = 0;
+
+        player.corpseSprite = 1;
+
+        return player;
+    },
+
+generateAttacks: function (name, amount, rate, range) {
+
+        // Generate the group of attack objects
+        var attacks = this.game.add.group();
+        attacks.enableBody = true;
+        attacks.physicsBodyType = Phaser.Physics.ARCADE;
+        attacks.createMultiple(amount, name);
+
+        if (name === 'spell') {
+            attacks.callAll('animations.add', 'animations', 'particle', [0, 1, 2, 3,4 ,5], 10, true);
+            attacks.callAll('animations.play', 'animations', 'particle');
+        } else if (name === 'fireball') {
+            attacks.callAll('animations.add', 'animations', 'particle', [0, 1, 2, 3], 10, true);
+            attacks.callAll('animations.play', 'animations', 'particle');
+        }
+
+        attacks.setAll('anchor.x', 0.5);
+        attacks.setAll('anchor.y', 0.5);
+        attacks.setAll('outOfBoundsKill', true);
+        attacks.setAll('checkWorldBounds', true);
+
+        attacks.rate = rate;
+        attacks.range = range;
+        attacks.next = 0;
+        attacks.name = name;
+
+        return attacks;
+    },
+
+playerHandler: function() {
+
+        if (this.player.alive) {
+            this.playerMovementHandler();
+
+            // Attack towards mouse click
+            if (this.game.input.activePointer.isDown) {
+
+PLAYER ATTACK RATE HERE
+                this.playerAttacks.rate = 1000 - (this.player.speed * 4);
+                    if (this.playerAttacks.rate < 200) {
+                        this.playerAttacks.rate = 200;
+                    }
+                this.playerAttacks.range = this.player.strength * 3;
+
+DOING THE ATTACK
+                this.attack(this.player, this.playerAttacks);
+            }
+
+            // Use spell when spacebar is pressed
+            if (this.game.time.now > this.spellCooldown) {
+            this.spellLabel.text = "READY!";
+
+                if (this.controls.spell.isDown) {
+                    this.playerSpells.rate = 5000;
+                    this.playerSpells.range = this.player.strength * 6;
+                    this.attack(this.player, this.playerSpells);
+                    this.spellCooldown = this.game.time.now + 15000;
+                }
+            } else {
+                this.spellLabel.text = "RECHARGING...";
+            }
+
+            if (this.player.health > this.player.vitality) {
+                this.player.health = this.player.vitality;
+            }
+
+            if (this.xp >= this.xpToNext) {
+                this.levelUp();
+            }
+        }
+
+        if (!this.player.alive) {
+            this.deathHandler(this.player);
+            this.game.time.events.add(1000, this.gameOver, this);
+        }
+    },
+
+    attack: function (attacker, attacks) {
+
+        if (attacker.alive && this.game.time.now > attacks.next && attacks.countDead() > 0) {
+            attacks.next = this.game.time.now + attacks.rate;
+            var a = attacks.getFirstDead();
+            a.scale.setTo(1.5);
+            a.name = attacker.name;
+            a.strength = attacker.strength;
+            a.reset(attacker.x + 16, attacker.y + 16);
+            a.lifespan = attacks.rate;
+            console.log(attacker.name + " used " + attacks.name + "!");
+            if (attacks.name === 'sword') {
+                a.rotation = this.game.physics.arcade.moveToPointer(a, attacks.range);
+                this.attackSound.play();
+            } else if (attacks.name === 'spell') {
+                a.rotation = this.game.physics.arcade.moveToPointer(a, attacks.range);
+                a.effect = 'spell';
+                a.strength *= 3;
+                this.fireballSound.play();
+            } else if (attacks.name === 'fireball') {
+                a.rotation = this.game.physics.arcade.moveToObject(a, this.player, attacks.range);
+                this.fireballSound.play();
+            }
+        }
+    },
+
+
+
+
+
+    collisionHandler: function() {
+
+        this.game.physics.arcade.collide(this.player, this.enemies, this.hit, null, this);
+        this.game.physics.arcade.collide(this.player, this.bosses, this.hit, null, this);
+        this.game.physics.arcade.collide(this.player, this.bossAttacks, this.hit, null, this);
+
+        this.game.physics.arcade.collide(this.bosses, this.playerAttacks, this.hit, null, this);
+        this.game.physics.arcade.collide(this.enemies, this.playerAttacks, this.hit, null, this);
+        this.game.physics.arcade.overlap(this.bosses, this.playerAttacks, this.hit, null, this);
+        this.game.physics.arcade.overlap(this.enemies, this.playerAttacks, this.hit, null, this);
+
+        this.game.physics.arcade.collide(this.bosses, this.playerSpells, this.hit, null, this);
+        this.game.physics.arcade.collide(this.enemies, this.playerSpells, this.hit, null, this);
+        this.game.physics.arcade.overlap(this.bosses, this.playerSpells, this.hit, null, this);
+        this.game.physics.arcade.overlap(this.enemies, this.playerSpells, this.hit, null, this);
+
+        this.game.physics.arcade.collide(this.obstacles, this.player, null, null, this);
+        this.game.physics.arcade.collide(this.obstacles, this.playerAttacks, null, null, this);
+        this.game.physics.arcade.collide(this.obstacles, this.enemies, null, null, this);
+
+        this.game.physics.arcade.overlap(this.collectables, this.player, this.collect, null, this);
+    },
+
+     hit: function (target, attacker) {
+
+        if (this.game.time.now > target.invincibilityTime) {
+            target.invincibilityTime = this.game.time.now + target.invincibilityFrames;
+            target.damage(attacker.strength)
+            if (target.health < 0) {
+                target.health = 0;
+            }
+            this.playSound(target.name);
+            this.notification = attacker.name + ' caused ' + attacker.strength + ' damage to ' + target.name + '!';
+
+            if (attacker.effect === 'spell') {
+                var emitter = this.game.add.emitter(attacker.x, attacker.y, 100);
+                emitter.makeParticles('spellParticle');
+                emitter.minParticleSpeed.setTo(-200, -200);
+                emitter.maxParticleSpeed.setTo(200, 200);
+                emitter.gravity = 0;
+                emitter.start(true, 1000, null, 100);
+            }
+        }
+    },

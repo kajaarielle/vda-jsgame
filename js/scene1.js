@@ -74,14 +74,14 @@ class Scene1 extends Phaser.Scene {
     this.registry.set("playerHealth", this.playerHealth);
 
     //#region PLAYER INPUT CONTROLLER
-    this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    this.keyUp.on("down", this.whenKeyUPPressed, this);
-    this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-    this.keyDown.on("down", this.whenKeyDOWNPressed, this);
-    this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-    this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
-    this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-    this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
+    // this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    // this.keyUp.on("down", this.whenKeyUPPressed, this);
+    // this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    // this.keyDown.on("down", this.whenKeyDOWNPressed, this);
+    // this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    // this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
+    // this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+    // this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
     this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     this.keyQ.on("down", this.whenKeyQPressed, this);
     //#endregion
@@ -187,6 +187,7 @@ class Scene1 extends Phaser.Scene {
           id: "enemy1",
           sprite: this.enemySprite1,
           startPosition: { x: 5, y: 7 },
+          speed: 2,
           attack: {
             range: 2,
             meleeDMG: 2,
@@ -201,6 +202,7 @@ class Scene1 extends Phaser.Scene {
           id: "enemy2",
           sprite: this.enemySprite2,
           startPosition: { x: 12, y: 10 },
+          speed: 2,
           attack: {
             range: 2,
             meleeDMG: 2,
@@ -215,6 +217,7 @@ class Scene1 extends Phaser.Scene {
           id: "enemy3",
           sprite: this.enemySprite3,
           startPosition: { x: 6, y: 14 },
+          speed: 2,
           attack: {
             range: 2,
             meleeDMG: 2,
@@ -229,6 +232,7 @@ class Scene1 extends Phaser.Scene {
           id: "enemy4",
           sprite: this.enemySprite4,
           startPosition: { x: 14, y: 5 },
+          speed: 2,
           attack: {
             range: 2,
             meleeDMG: 2,
@@ -244,6 +248,16 @@ class Scene1 extends Phaser.Scene {
 
     this.characterDatabase = this.gridEngineConfig;
     this.gridEngine.create(tileMap, this.gridEngineConfig);
+
+    this.enemyArray = [];
+    const characters = this.characterDatabase.characters;
+
+    for (const character of characters) {
+      if (character.id !== 'player') {
+        this.enemyArray.push(character);
+      }
+    }
+    console.log(this.enemyArray);
     //#endregion
 
     //#region CAMERA
@@ -272,10 +286,32 @@ class Scene1 extends Phaser.Scene {
     }
     //#endregion
 
+    //#region MOVE NPC RANDOMLY
+    this.enemyArray.forEach(enemy => {
+      this.gridEngine.moveRandomly(enemy.id);
+    });
+
+    // this.gridEngine.moveRandomly("npc0");
+    //#endregion
+
     this.startGame();
   }
 
   update() {
+    const cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown) {
+      this.gridEngine.move("player", "left");
+      this.walkSound.play();
+    } else if (cursors.right.isDown) {
+      this.gridEngine.move("player", "right");
+      this.walkSound.play();
+    } else if (cursors.up.isDown) {
+      this.gridEngine.move("player", "up");
+      this.walkSound.play();
+    } else if (cursors.down.isDown) {
+      this.gridEngine.move("player", "down");
+      this.walkSound.play();
+    }
   }
 
   //#region CUSTOM FUNCTIONS
@@ -306,34 +342,34 @@ class Scene1 extends Phaser.Scene {
 
   //#region CONTROLLER FUNCTIONS
   // TODO: check if the player actually moves, otherwise a turn still goes !!!
-  whenKeyUPPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      this.walkSound.play();
-      this.gridEngine.move("player", "up");
-      this.playerMoveFinished();
-    }
-  }
-  whenKeyDOWNPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      this.walkSound.play();
-      this.gridEngine.move("player", "down");
-      this.playerMoveFinished();
-    }
-  }
-  whenKeyLEFTPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      this.walkSound.play();
-      this.gridEngine.move("player", "left");
-      this.playerMoveFinished();
-    }
-  }
-  whenKeyRIGHTPressed() {
-    if (this.playerTurn && this.playerTurns != 0) {
-      this.walkSound.play();
-      this.gridEngine.move("player", "right");
-      this.playerMoveFinished();
-    }
-  }
+  // whenKeyUPPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     this.walkSound.play();
+  //     this.gridEngine.move("player", "up");
+  //     this.playerMoveFinished();
+  //   }
+  // }
+  // whenKeyDOWNPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     this.walkSound.play();
+  //     this.gridEngine.move("player", "down");
+  //     this.playerMoveFinished();
+  //   }
+  // }
+  // whenKeyLEFTPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     this.walkSound.play();
+  //     this.gridEngine.move("player", "left");
+  //     this.playerMoveFinished();
+  //   }
+  // }
+  // whenKeyRIGHTPressed() {
+  //   if (this.playerTurn && this.playerTurns != 0) {
+  //     this.walkSound.play();
+  //     this.gridEngine.move("player", "right");
+  //     this.playerMoveFinished();
+  //   }
+  // }
   whenKeyQPressed() {
     if ((this.playerTurn && this.playerTurns != 0)) {
       // Check if the player is in range to any enemies for each enemy character
@@ -392,10 +428,11 @@ class Scene1 extends Phaser.Scene {
   //#region TURNBASED
 
   startGame() {
-    this.registry.set("playerTurns", this.playerTurnsMax);
+    // this.registry.set("playerTurns", this.playerTurnsMax);
     this.registry.set("playerHealth", this.playerHealth);
 
     this.musicSound.play();
+
     let characterArray = this.characterDatabase.characters;
 
     characterArray.forEach(character => {
@@ -404,42 +441,39 @@ class Scene1 extends Phaser.Scene {
       }
     });
 
-    this.playerMoveBegin();
+    // this.playerMoveBegin();
   }
 
   //#region PLAYER TURN
-  playerMoveBegin() {
-    this.checkIfCanAttackAndEnableUI();
-  }
+  // playerMoveBegin() {
+  //   this.checkIfCanAttackAndEnableUI();
+  // }
 
-  checkIfCanAttackAndEnableUI() {
-    let inRangeMelee = 0;
-    let inRangeRange = 0;
+  // checkIfCanAttackAndEnableUI() {
+  //   let inRangeMelee = 0;
+  //   let inRangeRange = 0;
 
-    let characterArray = this.characterDatabase.characters;
+  //   this.enemyArray.forEach(enemy => {
+  //     this.currentEnemy = enemy;
 
-    characterArray.forEach(character => {
-      if (character.id != "player") {
-        this.currentEnemy = character;
+  //       if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
+  //         inRangeMelee++;
+  //       }
 
-        if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
-          inRangeMelee++;
-        }
+  //       if (this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id)) {
+  //         inRangeRange++;
+  //       }
+  //   });
 
-        if (this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id)) {
-          inRangeRange++;
-        }
-      }
-    });
 
-    if (inRangeMelee > 0 || inRangeRange > 0) {
-      this.visibilityUI(this.attackUI, true);
-    }
+  //   if (inRangeMelee > 0 || inRangeRange > 0) {
+  //     this.visibilityUI(this.attackUI, true);
+  //   }
 
-    else {
-      this.visibilityUI(this.attackUI, false);
-    }
-  }
+  //   else {
+  //     this.visibilityUI(this.attackUI, false);
+  //   }
+  // }
 
   dealDamageToEnemy(damage) {
     this.attackSound.play();
@@ -465,44 +499,44 @@ class Scene1 extends Phaser.Scene {
     this.characterDatabase.characters.splice(removeFromDatabase, 1);
   }
 
-  // Called after every player move.
-  playerMoveFinished() {
-    this.playerTurns--;
-    this.registry.set("playerTurns", this.playerTurns);
-    this.updateTextInUI(this.playerTurnsUI);
-    this.checkIfCanAttackAndEnableUI();
+  // // Called after every player move.
+  // playerMoveFinished() {
+  //   this.playerTurns--;
+  //   this.registry.set("playerTurns", this.playerTurns);
+  //   this.updateTextInUI(this.playerTurnsUI);
+  //   this.checkIfCanAttackAndEnableUI();
 
-    // If no more turns, end player turn.
-    if (this.playerTurns == 0) {
-      this.endPlayerTurn();
-    }
-  }
+  //   // If no more turns, end player turn.
+  //   if (this.playerTurns == 0) {
+  //     this.endPlayerTurn();
+  //   }
+  // }
 
-  // Called when the player has finished all their turns
-  endPlayerTurn() {
-    this.playerTurn = false;
-    this.enemyTurn();
-  }
+  // // Called when the player has finished all their turns
+  // endPlayerTurn() {
+  //   this.playerTurn = false;
+  //   this.enemyTurn();
+  // }
   //#endregion
 
   //#region ENEMY TURN
-  async enemyTurn() {
-    let enemyTurnDone = false;
-    const characters = this.characterDatabase.characters;
+  // async enemyTurn() {
+  //   let enemyTurnDone = false;
+  //   const characters = this.characterDatabase.characters;
 
-    for (const character of characters) {
-      if (character.id !== 'player') {
-        this.currentEnemy = character;
-        this.enemyDoSomething(this.currentEnemy);
-        await timer(500);
-      }
-    }
+  //   for (const character of characters) {
+  //     if (character.id !== 'player') {
+  //       this.currentEnemy = character;
+  //       this.enemyDoSomething(this.currentEnemy);
+  //       await timer(500);
+  //     }
+  //   }
 
-    enemyTurnDone = true;
-    if (enemyTurnDone) {
-      this.resetPlayerTurn();
-    }
-  }
+  //   enemyTurnDone = true;
+  //   if (enemyTurnDone) {
+  //     this.resetPlayerTurn();
+  //   }
+  // }
 
   enemyDoSomething(enemy) {
     let canMove = true;
