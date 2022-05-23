@@ -46,8 +46,8 @@ class Scene1 extends Phaser.Scene {
 
   create() {
     //#region PLAYER INPUT CONTROLLER
-    this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-    this.keyQ.on("down", this.whenKeyQPressed, this);
+    this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.keySpace.on("down", this.whenKeySpacePressed, this);
 
     this.controls = {
       up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -77,7 +77,7 @@ class Scene1 extends Phaser.Scene {
     //#region AI/NPC CHARACTERS
     this.generateNPC();
     this.generateChicken();
-    this.generateEnemy();
+    // this.generateEnemy();
 
     this.gridEngine.create(tileMap, this.gridEngineConfig);
 
@@ -114,9 +114,9 @@ class Scene1 extends Phaser.Scene {
     // Last stuff to do
     this.bullets = new Bullets(this);
 
-    this.input.on('pointerdown', function (pointer) {
-      this.attack(this.player, this.player.attack);
-    }, this);
+    // this.input.on('pointerdown', function (pointer) {
+    //   this.attack(this.player, this.player.attack);
+    // }, this);
 
     this.registry.set("playerHealth", this.player.maxHealth);
   }
@@ -164,12 +164,6 @@ class Scene1 extends Phaser.Scene {
     player.alive = true;
 
     player.attack = 3;
-    // this.playerAttacks = this.generateAttacks('sword', 1);
-
-    this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
-    this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
-    this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
-    this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
     return player;
   }
 
@@ -177,33 +171,9 @@ class Scene1 extends Phaser.Scene {
     this.npcArray.forEach(npc => {
       this.gridEngine.moveRandomly(npc.id, this.getRandomInt(0, 1500));
     });
-
     this.chickenArray.forEach(chicken => {
       this.gridEngine.moveRandomly(chicken.id, this.getRandomInt(0, 1500));
     });
-
-    this.enemyArray.forEach(enemy => {
-      this.gridEngine.moveRandomly(enemy.id, this.getRandomInt(0, 1500));
-    });
-  }
-
-  generateEnemy() {
-    for (let x = 19; x <= 20; x++) {
-      for (let y = 22; y <= 23; y++) {
-        const spr = this.add.sprite(0, 0, "dragon");
-        this.physics.add.existing(spr);
-        this.gridEngineConfig.characters.push({
-          id: `enemy${x}#${y}`,
-          sprite: spr,
-          // walkingAnimationMapping: 0,
-          startPosition: { x, y },
-          speed: 2,
-          healthMax: 5,
-          healthCurrent: 5,
-          attackDMG: 1,
-        });
-      }
-    }
   }
 
   generateChicken() {
@@ -241,7 +211,6 @@ class Scene1 extends Phaser.Scene {
   makeSpecificCharacterArrays() {
     this.npcArray = [];
     this.chickenArray = [];
-    this.enemyArray = [];
 
     const characters = this.gridEngineConfig.characters;
     for (const character of characters) {
@@ -252,9 +221,6 @@ class Scene1 extends Phaser.Scene {
         else if (character.id.includes("chicken")) {
           this.chickenArray.push(character);
         }
-        else if (character.id.includes("enemy")) {
-          this.enemyArray.push(character);
-        }
       }
       else if (character.id == "player") {
         this.playerRef = character;
@@ -263,7 +229,6 @@ class Scene1 extends Phaser.Scene {
     }
     console.log(this.npcArray);
     console.log(this.chickenArray);
-    console.log(this.enemyArray);
     console.log(this.playerRef);
   }
 
@@ -283,19 +248,33 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
-  attack(attacker, attacks) {
-    this.attackSound.play();
-    this.playAttackAnimation("melee"); // check direction!
-    for (let enemy of this.enemyArray) {
-      this.currentEnemy = enemy;
-      this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-      if (this.playerCanAttackMelee && this.currentEnemy != null) {
-        this.dealDamageToEnemy(this.playerRef.attackDMG);
-        console.log("ATTACKED");
-        break;
-      }
-    }
+  whenKeySpacePressed() {
+    // console.log("SPACE!");
+    let canTalk = false;
+    for (let npc of this.npcArray) {
+          this.currentNPC = npc;
+          canTalk = this.checkRangeOverlap(1, this.currentNPC.id);
+          if (canTalk && this.currentNPC != null) {
+            // TALK
+            console.log("TALK");
+            break;
+          }
+        }
   }
+
+  // attack(attacker, attacks) {
+  //   this.attackSound.play();
+  //   // this.playAttackAnimation("melee"); // check direction!
+  //   for (let enemy of this.enemyArray) {
+  //     this.currentEnemy = enemy;
+  //     this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+  //     if (this.playerCanAttackMelee && this.currentEnemy != null) {
+  //       this.dealDamageToEnemy(this.playerRef.attackDMG);
+  //       console.log("ATTACKED");
+  //       break;
+  //     }
+  //   }
+  // }
 
   //#region CUSTOM FUNCTIONS
 
@@ -345,45 +324,6 @@ class Scene1 extends Phaser.Scene {
 
   //#region CONTROLLER FUNCTIONS
 
-  whenKeyQPressed() {
-    this.attack(this.player, this.player.attack);
-  }
-  // whenKeyQPressed() {
-  //   if ((this.playerTurn && this.playerTurns != 0)) {
-  //     // Check if the player is in range to any enemies for each enemy character
-  //     let characterArray = this.gridEngineConfig.characters;
-
-  //     characterArray.forEach(character => {
-  //       if (character.id != "player") {
-  //         this.currentEnemy = character;
-  //         this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-
-  //         if (this.playerCanAttackMelee) {
-  //           let direction = this.getPlayerDirectionBeforeAttack;
-  //           this.playAttackAnimation("melee");
-  //           this.dealDamageToEnemy(this.playerRef.attack.meleeDMG);
-  //           this.playerMoveFinished();
-  //         }
-
-  //         else {
-  //           this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
-
-  //           if (this.playerCanAttackRange) {
-  //             this.playAttackAnimation("range");
-  //             this.dealDamageToEnemy(this.playerRef.attack.rangeDMG);
-  //             this.playerMoveFinished();
-  //           }
-
-  //           else {
-  //             console.log("You're not close enough for attack");
-  //           }
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-  //#endregion
-
   playAttackAnimation() {
     let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
     let melee = "MeleeAttack";
@@ -398,20 +338,20 @@ class Scene1 extends Phaser.Scene {
 
   dealDamageToEnemy(damage) {
     this.attackSound.play();
-    this.currentEnemy.healthCurrent = this.currentEnemy.healthCurrent - damage;
-    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentEnemy.healthCurrent);
+    this.currentNPC.healthCurrent = this.currentNPC.healthCurrent - damage;
+    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentNPC.healthCurrent);
     this.checkIfEnemyDead();
   }
 
   checkIfEnemyDead() {
-    if (this.currentEnemy.healthCurrent <= 0) {
-      this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
+    if (this.currentNPC.healthCurrent <= 0) {
+      this.killCharacterAndSprite(this.currentNPC.id, this.currentNPC.sprite);
     }
   }
 
   killCharacterAndSprite(character, sprite) {
     this.gridEngine.removeCharacter(character);
-    this.currentEnemy = null;
+    this.currentNPC = null;
     console.log(this.gridEngine.getAllCharacters());
     this.setThisSprite = sprite;
     this.setThisSprite.destroy();
@@ -420,12 +360,12 @@ class Scene1 extends Phaser.Scene {
     const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
     this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
 
-    this.enemyArray = [];
+    this.npcArray = [];
     const characters = this.gridEngineConfig.characters;
     for (const character of characters) {
       if (character.id !== 'player') {
         if (character.id.includes("enemy")) {
-          this.enemyArray.push(character);
+          this.npcArray.push(character);
         }
       }
     }
@@ -453,10 +393,10 @@ class Scene1 extends Phaser.Scene {
   enemyDoSomething(enemy) {
     let canMove = true;
     let canHeal = false;
-    let canAttackRange = this.checkRangeOverlap(this.currentEnemy.attack.range, this.currentEnemy.id);
-    let canAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+    let canAttackRange = this.checkRangeOverlap(this.currentNPC.attack.range, this.currentNPC.id);
+    let canAttackMelee = this.checkRangeOverlap(1, this.currentNPC.id);
 
-    if (this.currentEnemy.health.current != this.currentEnemy.health.max)
+    if (this.currentNPC.health.current != this.currentNPC.health.max)
       canHeal = true;
 
     let possibleMoves = [];
@@ -479,43 +419,43 @@ class Scene1 extends Phaser.Scene {
       switch (this.getRandomIntFromMax(4)) {
         case 0:
           this.walkSound.play();
-          this.gridEngine.move(this.currentEnemy.id, "right");
-          this.flipSprite(this.currentEnemy.sprite, "right");
+          this.gridEngine.move(this.currentNPC.id, "right");
+          this.flipSprite(this.currentNPC.sprite, "right");
           break;
         case 1:
           this.walkSound.play();
-          this.gridEngine.move(this.currentEnemy.id, "left");
-          this.flipSprite(this.currentEnemy.sprite, "left");
+          this.gridEngine.move(this.currentNPC.id, "left");
+          this.flipSprite(this.currentNPC.sprite, "left");
           break;
         case 2:
           this.walkSound.play();
-          this.gridEngine.move(this.currentEnemy.id, "up");
+          this.gridEngine.move(this.currentNPC.id, "up");
           break;
         case 3:
           this.walkSound.play();
-          this.gridEngine.move(this.currentEnemy.id, "down");
+          this.gridEngine.move(this.currentNPC.id, "down");
           break;
       }
     }
 
     else if (randomMove == "canAttackRange") {
       //attack range
-      this.dealDamageToPlayer(this.currentEnemy.attack.rangeDMG);
+      this.dealDamageToPlayer(this.currentNPC.attack.rangeDMG);
     }
 
     else if (randomMove == "canAttackMelee") {
       // attack melee
-      this.dealDamageToPlayer(this.currentEnemy.attack.meleeDMG);
+      this.dealDamageToPlayer(this.currentNPC.attack.meleeDMG);
     }
 
     else if (randomMove == "canHeal") {
-      this.currentEnemy.health.current = this.currentEnemy.health.current + 1;
-      console.log("Enemy healed! " + this.currentEnemy.id);
+      this.currentNPC.health.current = this.currentNPC.health.current + 1;
+      console.log("Enemy healed! " + this.currentNPC.id);
     }
   }
 
   dealDamageToPlayer(damage) {
-    console.log("ATTACK DMG: " + damage + " from " + this.currentEnemy.id);
+    console.log("ATTACK DMG: " + damage + " from " + this.currentNPC.id);
     this.attackSound.play();
     this.player.healthCurrent = this.player.healthCurrent - damage;
     this.registry.set("playerHealth", this.player.healthCurrent);
@@ -532,13 +472,13 @@ class Scene1 extends Phaser.Scene {
   //#endregion
 
   //#region OTHER FUNCTIONS
-  checkRangeOverlap(range, enemy) {
+  checkRangeOverlap(range, character) {
     let rangeOverlap;
 
     let playerPos = this.gridEngine.getPosition("player");
-    let enemyPos = this.gridEngine.getPosition(enemy);
-    let diffX = this.getDifference(enemyPos.x, playerPos.x);
-    let diffY = this.getDifference(enemyPos.y, playerPos.y);
+    let characterPos = this.gridEngine.getPosition(character);
+    let diffX = this.getDifference(characterPos.x, playerPos.x);
+    let diffY = this.getDifference(characterPos.y, playerPos.y);
 
     if (diffX <= range && diffY <= range) {
       return rangeOverlap = true;
@@ -593,58 +533,3 @@ class Scene1 extends Phaser.Scene {
   //#endregion
   //#endregion
 }
-
-// class Bullet extends Phaser.Physics.Arcade.Sprite
-// {
-//     constructor (scene, x, y)
-//     {
-//         super(scene, x, y, 'carrot');
-//     }
-
-//     fire (x, y)
-//     {
-//         this.body.reset(x, y);
-
-//         this.setActive(true);
-//         this.setVisible(true);
-
-//         this.setVelocityY(-300);
-//     }
-
-//     preUpdate (time, delta)
-//     {
-//         super.preUpdate(time, delta);
-
-//         if (this.y <= -32)
-//         {
-//             this.setActive(false);
-//             this.setVisible(false);
-//         }
-//     }
-// }
-
-// class Bullets extends Phaser.Physics.Arcade.Group
-// {
-//     constructor (scene)
-//     {
-//         super(scene.physics.world, scene);
-
-//         this.createMultiple({
-//             frameQuantity: 5,
-//             key: 'carrot',
-//             active: false,
-//             visible: false,
-//             classType: Bullet
-//         });
-//     }
-
-//     fireBullet (x, y)
-//     {
-//         let bullet = this.getFirstDead(false);
-
-//         if (bullet)
-//         {
-//             bullet.fire(x, y);
-//         }
-//     }
-// }
