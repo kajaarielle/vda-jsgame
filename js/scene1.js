@@ -27,10 +27,10 @@ class Scene1 extends Phaser.Scene {
     //#region CHARACTERS
     this.load.spritesheet(
       "player",
-      "images/cat-spritesheet-all.png",
+      "images/spritesheet-custom-2.png",
       {
-        frameWidth: 48,
-        frameHeight: 48,
+        frameWidth: 16,
+        frameHeight: 16,
       }
     );
     this.load.spritesheet(
@@ -41,7 +41,14 @@ class Scene1 extends Phaser.Scene {
         frameHeight: 24,
       }
     );
-    this.enemySpriteNames = ["dragon"];
+    this.load.spritesheet("charactersheet", "images/characters.png", {
+      frameWidth: 52,
+      frameHeight: 72,
+    });
+    this.load.spritesheet("chicken", "images/chicken.png", {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
 
     this.load.image(
       "bullet",
@@ -59,9 +66,9 @@ class Scene1 extends Phaser.Scene {
     //#region SET VARIABLES
     this.pixelSize = 16;
     this.mapTileSize = 32;
-    this.playerTurnsMax = 5;
-    this.playerTurns = this.playerTurnsMax;
-    this.playerTurn = true;
+    // this.playerTurnsMax = 5;
+    // this.playerTurns = this.playerTurnsMax;
+    // this.playerTurn = true;
     this.playerHealth = 10;
     this.debugMode = false;
     //#endregion
@@ -70,7 +77,14 @@ class Scene1 extends Phaser.Scene {
   create() {
     console.log("Printing 'phaser.this': ", this);
 
-    this.registry.set("playerTurns", this.playerTurnsMax);
+    this.plugins.installScenePlugin(
+      'WeaponPlugin',
+      WeaponPlugin.WeaponPlugin,
+      'weapons',
+      this
+  );
+
+    // this.registry.set("playerTurns", this.playerTurnsMax);
     this.registry.set("playerHealth", this.playerHealth);
 
     //#region PLAYER INPUT CONTROLLER
@@ -118,32 +132,11 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       "player"
     );
-    this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
-    this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
-    this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
-    this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
-    
-
-
-    this.enemySprite1 = this.add.sprite(
-      0, 0,
-      this.enemySpriteNames[0]
-    );
-    this.enemySprite2 = this.add.sprite(
-      0, 0,
-      this.enemySpriteNames[0]
-    );
-    this.enemySprite3 = this.add.sprite(
-      0, 0,
-      this.enemySpriteNames[0]
-    );
-    this.enemySprite4 = this.add.sprite(
-      0, 0,
-      this.enemySpriteNames[0]
-    );
-
-
-
+    // this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
+    // this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
+    // this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
+    // this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+  
     this.bullets = new Bullets(this);
     //#endregion
 
@@ -153,98 +146,43 @@ class Scene1 extends Phaser.Scene {
         {
           id: "player",
           sprite: this.playerSprite,
-          walkingAnimationMapping: {
-            up: {
-              leftFoot: 4,
-              standing: 3,
-              rightFoot: 5,
-            },
-            down: {
-              leftFoot: 1,
-              standing: 0,
-              rightFoot: 2,
-            },
-            left: {
-              leftFoot: 7,
-              standing: 6,
-              rightFoot: 8,
-            },
-            right: {
-              leftFoot: 10,
-              standing: 9,
-              rightFoot: 11,
-            },
-          },
+          walkingAnimationMapping: 0,
           startPosition: { x: 2, y: 2 },
-          offsetY: 16,
           attack: {
             range: 3,
             meleeDMG: 3,
             rangeDMG: 2,
           },
         },
-        {
-          id: "enemy1",
-          sprite: this.enemySprite1,
-          startPosition: { x: 5, y: 7 },
-          speed: 2,
-          attack: {
-            range: 2,
-            meleeDMG: 2,
-            rangeDMG: 1,
-          },
-          health: {
-            max: 5,
-            current: 5,
-          },
-        },
-        {
-          id: "enemy2",
-          sprite: this.enemySprite2,
-          startPosition: { x: 12, y: 10 },
-          speed: 2,
-          attack: {
-            range: 2,
-            meleeDMG: 2,
-            rangeDMG: 1,
-          },
-          health: {
-            max: 5,
-            current: 5,
-          },
-        },
-        {
-          id: "enemy3",
-          sprite: this.enemySprite3,
-          startPosition: { x: 6, y: 14 },
-          speed: 2,
-          attack: {
-            range: 2,
-            meleeDMG: 2,
-            rangeDMG: 1,
-          },
-          health: {
-            max: 5,
-            current: 5,
-          },
-        },
-        {
-          id: "enemy4",
-          sprite: this.enemySprite4,
-          startPosition: { x: 14, y: 5 },
-          speed: 2,
-          attack: {
-            range: 2,
-            meleeDMG: 2,
-            rangeDMG: 1,
-          },
-          health: {
-            max: 5,
-            current: 5,
-          },
-        },
       ],
     };
+
+    // for (let x = 4; x <= 7; x++) {
+    //   for (let y = 5; y <= 8; y++) {
+    //     const spr = this.add.sprite(0, 0, "charactersheet");
+    //     spr.scale = 0.25;
+    //     this.gridEngineConfig.characters.push({
+    //       id: `npc${x}#${y}`,
+    //       sprite: spr,
+    //       walkingAnimationMapping: this.getRandomInt(0, 6),
+    //       startPosition: { x, y },
+    //       speed: 2,
+    //     });
+    //   }
+    // }
+
+    for (let x = 11; x <= 13; x++) {
+      for (let y = 15; y <= 18; y++) {
+        const spr = this.add.sprite(0, 0, "chicken");
+        this.gridEngineConfig.characters.push({
+          id: `chicken${x}#${y}`,
+          sprite: spr,
+          walkingAnimationMapping: 0,
+          startPosition: { x, y },
+          speed: 2,
+        });
+      }
+    }
 
     this.characterDatabase = this.gridEngineConfig;
     this.gridEngine.create(tileMap, this.gridEngineConfig);
@@ -258,6 +196,13 @@ class Scene1 extends Phaser.Scene {
       }
     }
     console.log(this.enemyArray);
+
+    //#region MOVE NPC RANDOMLY
+    this.enemyArray.forEach(enemy => {
+      this.gridEngine.moveRandomly(enemy.id, this.getRandomInt(0, 1500));
+    });
+    //#endregion
+
     //#endregion
 
     //#region CAMERA
@@ -286,13 +231,7 @@ class Scene1 extends Phaser.Scene {
     }
     //#endregion
 
-    //#region MOVE NPC RANDOMLY
-    this.enemyArray.forEach(enemy => {
-      this.gridEngine.moveRandomly(enemy.id);
-    });
-
-    // this.gridEngine.moveRandomly("npc0");
-    //#endregion
+    
 
     this.startGame();
   }
@@ -301,20 +240,23 @@ class Scene1 extends Phaser.Scene {
     const cursors = this.input.keyboard.createCursorKeys();
     if (cursors.left.isDown) {
       this.gridEngine.move("player", "left");
-      this.walkSound.play();
     } else if (cursors.right.isDown) {
       this.gridEngine.move("player", "right");
-      this.walkSound.play();
     } else if (cursors.up.isDown) {
       this.gridEngine.move("player", "up");
-      this.walkSound.play();
     } else if (cursors.down.isDown) {
       this.gridEngine.move("player", "down");
-      this.walkSound.play();
     }
   }
 
   //#region CUSTOM FUNCTIONS
+
+  getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   createPlayerAnimation(name, startFrame, endFrame) {
     this.anims.create({
       key: name,
