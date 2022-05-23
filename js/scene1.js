@@ -15,9 +15,9 @@ class Scene1 extends Phaser.Scene {
     this.load.image("tileSetSproutland", "images/tileset-sproutland.png");
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
 
-    this.load.spritesheet("player", "images/spritesheet-custom-2.png", {
-      frameWidth: 16,
-      frameHeight: 16,
+    this.load.spritesheet("player", "images/cat-full.png", {
+      frameWidth: 48,
+      frameHeight: 48,
     });
     this.load.spritesheet("dragon", "images/dragon-spritesheet.png", {
       frameWidth: 24,
@@ -40,7 +40,6 @@ class Scene1 extends Phaser.Scene {
     //#region SET VARIABLES
     this.pixelSize = 16;
     this.mapTileSize = 32;
-    this.playerHealth = 10;
     this.debugMode = false;
     //#endregion
   }
@@ -60,22 +59,20 @@ class Scene1 extends Phaser.Scene {
 
     this.generateSounds();
     const { tileMap, collisionLayers } = this.generateTilemap();
-    this.generatePlayer();
+    this.player = this.generatePlayer();
     this.gridEngineConfig = {
       characters: [
         {
           id: "player",
-          sprite: this.playerSprite,
+          sprite: this.player,
           walkingAnimationMapping: 0,
           startPosition: { x: 2, y: 2 },
-          attack: {
-            range: 3,
-            meleeDMG: 3,
-            rangeDMG: 2,
-          },
+          offsetY: 16,
+          attackDMG: 2,
         },
       ],
     };
+    
 
     //#region AI/NPC CHARACTERS
     this.generateNPC();
@@ -90,12 +87,12 @@ class Scene1 extends Phaser.Scene {
 
     //#region CAMERA
     this.cameras.main.setBounds(0, 0, (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize));
-    this.cameras.main.startFollow(this.playerSprite);
+    this.cameras.main.startFollow(this.player);
     //#endregion
 
     //#region UI
     this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
-    this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.playerHealth).setScrollFactor(0);
+    this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.player.healthMax).setScrollFactor(0);
     this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
     //#endregion
 
@@ -115,7 +112,13 @@ class Scene1 extends Phaser.Scene {
     //#endregion
 
     // Last stuff to do
-    this.registry.set("playerHealth", this.playerHealth);
+    this.bullets = new Bullets(this);
+
+    this.input.on('pointerdown', function (pointer) {
+      this.attack(this.player, this.player.attack);
+    }, this);
+
+    this.registry.set("playerHealth", this.player.maxHealth);
   }
 
   generateSounds() {
@@ -149,20 +152,25 @@ class Scene1 extends Phaser.Scene {
   }
 
   generatePlayer() {
-    this.playerSprite = this.add.sprite(
+    let player = this.add.sprite(
       0, 0,
       "player"
     );
-    this.physics.add.existing(this.playerSprite);
+    this.physics.add.existing(player);         
 
-    this.registry.set("playerHealth", this.playerHealth);
+    player.healthMax = 100;
+    player.healthCurrent = player.healthMax;
+    player.strengthMax = 25;
+    player.alive = true;
 
+    player.attack = 3;
     // this.playerAttacks = this.generateAttacks('sword', 1);
 
-    // this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
-    // this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
-    // this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
-    // this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+    this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
+    this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
+    this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
+    this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+    return player;
   }
 
   characterMoveHandler() {
@@ -190,6 +198,9 @@ class Scene1 extends Phaser.Scene {
           // walkingAnimationMapping: 0,
           startPosition: { x, y },
           speed: 2,
+          healthMax: 5,
+          healthCurrent: 5,
+          attackDMG: 1,
         });
       }
     }
@@ -244,18 +255,20 @@ class Scene1 extends Phaser.Scene {
         else if (character.id.includes("enemy")) {
           this.enemyArray.push(character);
         }
-        else if (character.id == "player") {
-          this.playerRef = character;
-        }
+      }
+      else if (character.id == "player") {
+        this.playerRef = character;
+        console.log("Player is set as reference");
       }
     }
     console.log(this.npcArray);
     console.log(this.chickenArray);
     console.log(this.enemyArray);
+    console.log(this.playerRef);
   }
 
   update() {
-    
+    this.playerMovementHandler();
   }
 
   playerMovementHandler() {
@@ -270,17 +283,17 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
-  playerHandler() {
-    this.playerMovementHandler();
-
-    
-    if (this.input.activePointer.isDown) {
-      this.playerAttacks.rate = 1000 - (this.player.speed * 4);
-      if (this.playerAttacks.rate < 200) {
-        this.playerAttacks.rate = 200;
+  attack(attacker, attacks) {
+    this.attackSound.play();
+    this.playAttackAnimation("melee"); // check direction!
+    for (let enemy of this.enemyArray) {
+      this.currentEnemy = enemy;
+      this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+      if (this.playerCanAttackMelee && this.currentEnemy != null) {
+        this.dealDamageToEnemy(this.playerRef.attackDMG);
+        console.log("ATTACKED");
+        break;
       }
-      this.playerAttacks.range = this.player.strength * 3;
-      this.attack(this.player, this.playerAttacks);
     }
   }
 
@@ -333,114 +346,72 @@ class Scene1 extends Phaser.Scene {
   //#region CONTROLLER FUNCTIONS
 
   whenKeyQPressed() {
-    if ((this.playerTurn && this.playerTurns != 0)) {
-      // Check if the player is in range to any enemies for each enemy character
-      let characterArray = this.gridEngineConfig.characters;
-
-      characterArray.forEach(character => {
-        if (character.id != "player") {
-          this.currentEnemy = character;
-          this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-
-          if (this.playerCanAttackMelee) {
-            let direction = this.getPlayerDirectionBeforeAttack;
-            this.playAttackAnimation("melee");
-            this.dealDamageToEnemy(this.playerRef.attack.meleeDMG);
-            this.playerMoveFinished();
-          }
-
-          else {
-            this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
-
-            if (this.playerCanAttackRange) {
-              this.playAttackAnimation("range");
-              this.dealDamageToEnemy(this.playerRef.attack.rangeDMG);
-              this.playerMoveFinished();
-            }
-
-            else {
-              console.log("You're not close enough for attack");
-            }
-          }
-        }
-      });
-    }
+    this.attack(this.player, this.player.attack);
   }
+  // whenKeyQPressed() {
+  //   if ((this.playerTurn && this.playerTurns != 0)) {
+  //     // Check if the player is in range to any enemies for each enemy character
+  //     let characterArray = this.gridEngineConfig.characters;
+
+  //     characterArray.forEach(character => {
+  //       if (character.id != "player") {
+  //         this.currentEnemy = character;
+  //         this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
+
+  //         if (this.playerCanAttackMelee) {
+  //           let direction = this.getPlayerDirectionBeforeAttack;
+  //           this.playAttackAnimation("melee");
+  //           this.dealDamageToEnemy(this.playerRef.attack.meleeDMG);
+  //           this.playerMoveFinished();
+  //         }
+
+  //         else {
+  //           this.playerCanAttackRange = this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id);
+
+  //           if (this.playerCanAttackRange) {
+  //             this.playAttackAnimation("range");
+  //             this.dealDamageToEnemy(this.playerRef.attack.rangeDMG);
+  //             this.playerMoveFinished();
+  //           }
+
+  //           else {
+  //             console.log("You're not close enough for attack");
+  //           }
+  //         }
+  //       }
+  //     });
+  //   }
+  // }
   //#endregion
 
-  playAttackAnimation(attackType) {
+  playAttackAnimation() {
     let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
     let melee = "MeleeAttack";
-    let range = "RangeAttack";
     console.log(direction);
-
-    if (attackType == "melee") {
-      this.playerSprite.anims.play(direction + melee);
-    }
-    if (attackType == "range") {
-      // this.playerSprite.anims.play(direction + range);
-
-      let playerX = this.playerSprite.x + 24;
-      let playerY = this.playerSprite.y + 24;
-      this.bullets.fireBullet(playerX, playerY);
-
-    }
+      this.gridEngine.stopMovement("player");
+      this.player.anims.play(direction + melee);
+    
   }
+
 
   //#region TURNBASED
 
-  startGame() {
-    // this.registry.set("playerTurns", this.playerTurnsMax);
-    this.registry.set("playerHealth", this.playerHealth);
-    // this.playerMoveBegin();
-  }
-
-  //#region PLAYER TURN
-  // playerMoveBegin() {
-  //   this.checkIfCanAttackAndEnableUI();
-  // }
-
-  // checkIfCanAttackAndEnableUI() {
-  //   let inRangeMelee = 0;
-  //   let inRangeRange = 0;
-
-  //   this.enemyArray.forEach(enemy => {
-  //     this.currentEnemy = enemy;
-
-  //       if (this.checkRangeOverlap(1, this.currentEnemy.id)) {
-  //         inRangeMelee++;
-  //       }
-
-  //       if (this.checkRangeOverlap(this.playerRef.attack.range, this.currentEnemy.id)) {
-  //         inRangeRange++;
-  //       }
-  //   });
-
-
-  //   if (inRangeMelee > 0 || inRangeRange > 0) {
-  //     this.visibilityUI(this.attackUI, true);
-  //   }
-
-  //   else {
-  //     this.visibilityUI(this.attackUI, false);
-  //   }
-  // }
-
   dealDamageToEnemy(damage) {
     this.attackSound.play();
-    this.currentEnemy.health.current = this.currentEnemy.health.current - damage;
-    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentEnemy.health.current);
+    this.currentEnemy.healthCurrent = this.currentEnemy.healthCurrent - damage;
+    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentEnemy.healthCurrent);
     this.checkIfEnemyDead();
   }
 
   checkIfEnemyDead() {
-    if (this.currentEnemy.health.current <= 0) {
+    if (this.currentEnemy.healthCurrent <= 0) {
       this.killCharacterAndSprite(this.currentEnemy.id, this.currentEnemy.sprite);
     }
   }
 
   killCharacterAndSprite(character, sprite) {
     this.gridEngine.removeCharacter(character);
+    this.currentEnemy = null;
     console.log(this.gridEngine.getAllCharacters());
     this.setThisSprite = sprite;
     this.setThisSprite.destroy();
@@ -448,27 +419,17 @@ class Scene1 extends Phaser.Scene {
     // remove data from array
     const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
     this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
+
+    this.enemyArray = [];
+    const characters = this.gridEngineConfig.characters;
+    for (const character of characters) {
+      if (character.id !== 'player') {
+        if (character.id.includes("enemy")) {
+          this.enemyArray.push(character);
+        }
+      }
+    }
   }
-
-  // // Called after every player move.
-  // playerMoveFinished() {
-  //   this.playerTurns--;
-  //   this.registry.set("playerTurns", this.playerTurns);
-  //   this.updateTextInUI(this.playerTurnsUI);
-  //   this.checkIfCanAttackAndEnableUI();
-
-  //   // If no more turns, end player turn.
-  //   if (this.playerTurns == 0) {
-  //     this.endPlayerTurn();
-  //   }
-  // }
-
-  // // Called when the player has finished all their turns
-  // endPlayerTurn() {
-  //   this.playerTurn = false;
-  //   this.enemyTurn();
-  // }
-  //#endregion
 
   //#region ENEMY TURN
   // async enemyTurn() {
@@ -556,8 +517,8 @@ class Scene1 extends Phaser.Scene {
   dealDamageToPlayer(damage) {
     console.log("ATTACK DMG: " + damage + " from " + this.currentEnemy.id);
     this.attackSound.play();
-    this.playerHealth = this.playerHealth - damage;
-    this.registry.set("playerHealth", this.playerHealth);
+    this.player.healthCurrent = this.player.healthCurrent - damage;
+    this.registry.set("playerHealth", this.player.healthCurrent);
     this.updateTextInUI(this.healthUI);
   }
 
@@ -615,7 +576,7 @@ class Scene1 extends Phaser.Scene {
     if (nameUI == this.playerTurnsUI)
       this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
     if (nameUI == this.healthUI)
-      this.healthUI.setText('Health: ' + this.playerHealth);
+      this.healthUI.setText('Health: ' + this.player.healthCurrent);
   }
 
   visibilityUI(nameUI, visibility) {
@@ -633,3 +594,57 @@ class Scene1 extends Phaser.Scene {
   //#endregion
 }
 
+// class Bullet extends Phaser.Physics.Arcade.Sprite
+// {
+//     constructor (scene, x, y)
+//     {
+//         super(scene, x, y, 'carrot');
+//     }
+
+//     fire (x, y)
+//     {
+//         this.body.reset(x, y);
+
+//         this.setActive(true);
+//         this.setVisible(true);
+
+//         this.setVelocityY(-300);
+//     }
+
+//     preUpdate (time, delta)
+//     {
+//         super.preUpdate(time, delta);
+
+//         if (this.y <= -32)
+//         {
+//             this.setActive(false);
+//             this.setVisible(false);
+//         }
+//     }
+// }
+
+// class Bullets extends Phaser.Physics.Arcade.Group
+// {
+//     constructor (scene)
+//     {
+//         super(scene.physics.world, scene);
+
+//         this.createMultiple({
+//             frameQuantity: 5,
+//             key: 'carrot',
+//             active: false,
+//             visible: false,
+//             classType: Bullet
+//         });
+//     }
+
+//     fireBullet (x, y)
+//     {
+//         let bullet = this.getFirstDead(false);
+
+//         if (bullet)
+//         {
+//             bullet.fire(x, y);
+//         }
+//     }
+// }
