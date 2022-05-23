@@ -11,36 +11,18 @@ class Scene1 extends Phaser.Scene {
 
   preload() {
     //#region LOAD RESOURCES
-
-    //#region TILEMAP
-    this.load.image(
-      "tileSet",
-      "images/tileset.png"
-    );
-    this.load.image(
-      "tileSetSproutland",
-      "images/tileset-sproutland.png"
-    );
+    this.load.image("tileSet", "images/tileset.png");
+    this.load.image("tileSetSproutland", "images/tileset-sproutland.png");
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
-    //#endregion
 
-    //#region CHARACTERS
-    this.load.spritesheet(
-      "player",
-      "images/spritesheet-custom-2.png",
-      {
-        frameWidth: 16,
-        frameHeight: 16,
-      }
-    );
-    this.load.spritesheet(
-      "dragon",
-      "images/dragon-spritesheet.png",
-      {
-        frameWidth: 24,
-        frameHeight: 24,
-      }
-    );
+    this.load.spritesheet("player", "images/spritesheet-custom-2.png", {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+    this.load.spritesheet("dragon", "images/dragon-spritesheet.png", {
+      frameWidth: 24,
+      frameHeight: 24,
+    });
     this.load.spritesheet("charactersheet", "images/characters.png", {
       frameWidth: 52,
       frameHeight: 72,
@@ -50,97 +32,35 @@ class Scene1 extends Phaser.Scene {
       frameHeight: 16,
     });
 
-    this.load.image(
-      "bullet",
-      "images/bullet.png"
-    );
-    //#endregion
-
-    //#region AUDIO
     this.load.audio("music", ["audio/music.mp3"]);
     this.load.audio("attack", ["audio/attack.mp3"]);
     this.load.audio("walk", ["audio/walk.mp3"]);
-    //#endregion
     //#endregion
 
     //#region SET VARIABLES
     this.pixelSize = 16;
     this.mapTileSize = 32;
-    // this.playerTurnsMax = 5;
-    // this.playerTurns = this.playerTurnsMax;
-    // this.playerTurn = true;
     this.playerHealth = 10;
     this.debugMode = false;
     //#endregion
   }
 
   create() {
-    console.log("Printing 'phaser.this': ", this);
-
-    this.plugins.installScenePlugin(
-      'WeaponPlugin',
-      WeaponPlugin.WeaponPlugin,
-      'weapons',
-      this
-  );
-
-    // this.registry.set("playerTurns", this.playerTurnsMax);
-    this.registry.set("playerHealth", this.playerHealth);
-
     //#region PLAYER INPUT CONTROLLER
-    // this.keyUp = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    // this.keyUp.on("down", this.whenKeyUPPressed, this);
-    // this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-    // this.keyDown.on("down", this.whenKeyDOWNPressed, this);
-    // this.keyLeft = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-    // this.keyLeft.on("down", this.whenKeyLEFTPressed, this);
-    // this.keyRight = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-    // this.keyRight.on("down", this.whenKeyRIGHTPressed, this);
     this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     this.keyQ.on("down", this.whenKeyQPressed, this);
+
+    this.controls = {
+      up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    };
     //#endregion
 
-    //#region ADD SOUNDS
-    this.attackSound = this.sound.add("attack", { loop: false });
-    this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
-    this.musicSound = this.sound.add("music", { loop: true, volume: 0.1 });
-    //#endregion
-
-    //#region RENDER TILEMAP
-    const tileMap = this.make.tilemap({ key: "map" });
-    // "name of tileset in Tiled", "name of phaser tileset reference"
-    const tileset = tileMap.addTilesetImage("tileset", "tileSet");
-    const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
-    // layer names from Tiled ( tileset, x, y ) https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
-    const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
-    const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
-    const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
-    const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
-    const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
-
-    // Make array of collisionLayers to enable setCollisionByProperty and debug collision
-    const collisionLayers = [worldLayer, fenceLayer];
-
-    // GridEngine detects the "ge_collide" property automatically, but for debugMode, we need to set the property
-    for (let i = 0; i < collisionLayers.length; i++) {
-      collisionLayers[i].setCollisionByProperty({ ge_collide: true });
-    }
-    //#endregion
-
-    //#region ADD CHARACTERS AS SPRITES
-    this.playerSprite = this.add.sprite(
-      0, 0,
-      "player"
-    );
-    // this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
-    // this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
-    // this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
-    // this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
-  
-    this.bullets = new Bullets(this);
-    //#endregion
-
-    //#region GRID ENGINE CONFIG
+    this.generateSounds();
+    const { tileMap, collisionLayers } = this.generateTilemap();
+    this.generatePlayer();
     this.gridEngineConfig = {
       characters: [
         {
@@ -157,52 +77,15 @@ class Scene1 extends Phaser.Scene {
       ],
     };
 
-    // for (let x = 4; x <= 7; x++) {
-    //   for (let y = 5; y <= 8; y++) {
-    //     const spr = this.add.sprite(0, 0, "charactersheet");
-    //     spr.scale = 0.25;
-    //     this.gridEngineConfig.characters.push({
-    //       id: `npc${x}#${y}`,
-    //       sprite: spr,
-    //       walkingAnimationMapping: this.getRandomInt(0, 6),
-    //       startPosition: { x, y },
-    //       speed: 2,
-    //     });
-    //   }
-    // }
+    //#region AI/NPC CHARACTERS
+    this.generateNPC();
+    this.generateChicken();
+    this.generateEnemy();
 
-    for (let x = 11; x <= 13; x++) {
-      for (let y = 15; y <= 18; y++) {
-        const spr = this.add.sprite(0, 0, "chicken");
-        this.gridEngineConfig.characters.push({
-          id: `chicken${x}#${y}`,
-          sprite: spr,
-          walkingAnimationMapping: 0,
-          startPosition: { x, y },
-          speed: 2,
-        });
-      }
-    }
-
-    this.characterDatabase = this.gridEngineConfig;
     this.gridEngine.create(tileMap, this.gridEngineConfig);
 
-    this.enemyArray = [];
-    const characters = this.characterDatabase.characters;
-
-    for (const character of characters) {
-      if (character.id !== 'player') {
-        this.enemyArray.push(character);
-      }
-    }
-    console.log(this.enemyArray);
-
-    //#region MOVE NPC RANDOMLY
-    this.enemyArray.forEach(enemy => {
-      this.gridEngine.moveRandomly(enemy.id, this.getRandomInt(0, 1500));
-    });
-    //#endregion
-
+    this.makeSpecificCharacterArrays();
+    this.characterMoveHandler();
     //#endregion
 
     //#region CAMERA
@@ -231,25 +114,190 @@ class Scene1 extends Phaser.Scene {
     }
     //#endregion
 
-    
+    // Last stuff to do
+    this.registry.set("playerHealth", this.playerHealth);
+  }
 
-    this.startGame();
+  generateSounds() {
+    this.attackSound = this.sound.add("attack", { loop: false });
+    this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
+    this.musicSound = this.sound.add("music", { loop: true, volume: 0.1 });
+
+    this.musicSound.play();
+  }
+
+  generateTilemap() {
+    const tileMap = this.make.tilemap({ key: "map" });
+    // "name of tileset in Tiled", "name of phaser tileset reference"
+    const tileset = tileMap.addTilesetImage("tileset", "tileSet");
+    const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
+    // layer names from Tiled ( tileset, x, y ) https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
+    const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
+    const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
+    const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
+    const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
+    const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
+
+    // Make array of collisionLayers to enable setCollisionByProperty and debug collision
+    const collisionLayers = [worldLayer, fenceLayer];
+
+    // GridEngine detects the "ge_collide" property automatically, but for debugMode, we need to set the property
+    for (let i = 0; i < collisionLayers.length; i++) {
+      collisionLayers[i].setCollisionByProperty({ ge_collide: true });
+    }
+    return { tileMap, collisionLayers };
+  }
+
+  generatePlayer() {
+    this.playerSprite = this.add.sprite(
+      0, 0,
+      "player"
+    );
+    this.physics.add.existing(this.playerSprite);
+
+    this.registry.set("playerHealth", this.playerHealth);
+
+    // this.playerAttacks = this.generateAttacks('sword', 1);
+
+    // this.createPlayerAnimation.call(this, "downMeleeAttack", 12, 13);
+    // this.createPlayerAnimation.call(this, "upMeleeAttack", 15, 16);
+    // this.createPlayerAnimation.call(this, "leftMeleeAttack", 18, 19);
+    // this.createPlayerAnimation.call(this, "rightMeleeAttack", 21, 22);
+  }
+
+  characterMoveHandler() {
+    this.npcArray.forEach(npc => {
+      this.gridEngine.moveRandomly(npc.id, this.getRandomInt(0, 1500));
+    });
+
+    this.chickenArray.forEach(chicken => {
+      this.gridEngine.moveRandomly(chicken.id, this.getRandomInt(0, 1500));
+    });
+
+    this.enemyArray.forEach(enemy => {
+      this.gridEngine.moveRandomly(enemy.id, this.getRandomInt(0, 1500));
+    });
+  }
+
+  generateEnemy() {
+    for (let x = 19; x <= 20; x++) {
+      for (let y = 22; y <= 23; y++) {
+        const spr = this.add.sprite(0, 0, "dragon");
+        this.physics.add.existing(spr);
+        this.gridEngineConfig.characters.push({
+          id: `enemy${x}#${y}`,
+          sprite: spr,
+          // walkingAnimationMapping: 0,
+          startPosition: { x, y },
+          speed: 2,
+        });
+      }
+    }
+  }
+
+  generateChicken() {
+    for (let x = 11; x <= 13; x++) {
+      for (let y = 15; y <= 18; y++) {
+        const spr = this.add.sprite(0, 0, "chicken");
+        this.physics.add.existing(spr);
+        this.gridEngineConfig.characters.push({
+          id: `chicken${x}#${y}`,
+          sprite: spr,
+          walkingAnimationMapping: 0,
+          startPosition: { x, y },
+          speed: 2,
+        });
+      }
+    }
+  }
+
+  generateNPC() {
+    for (let x = 4; x <= 7; x++) {
+      for (let y = 5; y <= 8; y++) {
+        const spr = this.add.sprite(0, 0, "charactersheet");
+        spr.scale = 0.25;
+        this.physics.add.existing(spr);
+        this.gridEngineConfig.characters.push({
+          id: `npc${x}#${y}`,
+          sprite: spr,
+          walkingAnimationMapping: this.getRandomInt(0, 6),
+          startPosition: { x, y },
+          speed: 2,
+        });
+      }
+    }
+  }
+  makeSpecificCharacterArrays() {
+    this.npcArray = [];
+    this.chickenArray = [];
+    this.enemyArray = [];
+
+    const characters = this.gridEngineConfig.characters;
+    for (const character of characters) {
+      if (character.id !== 'player') {
+        if (character.id.includes("npc")) {
+          this.npcArray.push(character);
+        }
+        else if (character.id.includes("chicken")) {
+          this.chickenArray.push(character);
+        }
+        else if (character.id.includes("enemy")) {
+          this.enemyArray.push(character);
+        }
+        else if (character.id == "player") {
+          this.playerRef = character;
+        }
+      }
+    }
+    console.log(this.npcArray);
+    console.log(this.chickenArray);
+    console.log(this.enemyArray);
   }
 
   update() {
-    const cursors = this.input.keyboard.createCursorKeys();
-    if (cursors.left.isDown) {
+    
+  }
+
+  playerMovementHandler() {
+    if (this.controls.left.isDown) {
       this.gridEngine.move("player", "left");
-    } else if (cursors.right.isDown) {
+    } else if (this.controls.right.isDown) {
       this.gridEngine.move("player", "right");
-    } else if (cursors.up.isDown) {
+    } else if (this.controls.up.isDown) {
       this.gridEngine.move("player", "up");
-    } else if (cursors.down.isDown) {
+    } else if (this.controls.down.isDown) {
       this.gridEngine.move("player", "down");
     }
   }
 
+  playerHandler() {
+    this.playerMovementHandler();
+
+    
+    if (this.input.activePointer.isDown) {
+      this.playerAttacks.rate = 1000 - (this.player.speed * 4);
+      if (this.playerAttacks.rate < 200) {
+        this.playerAttacks.rate = 200;
+      }
+      this.playerAttacks.range = this.player.strength * 3;
+      this.attack(this.player, this.playerAttacks);
+    }
+  }
+
   //#region CUSTOM FUNCTIONS
+
+  //   generateCollectables () {
+
+  //     this.collectables = this.game.add.group();
+  //     this.collectables.enableBody = true;
+  //     this.collectables.physicsBodyType = Phaser.Physics.ARCADE;
+
+  //     var amount = 100;
+  //     for (var i = 0; i < amount; i++) {
+  //         var point = this.getRandomLocation();
+  //         this.generateChest(point);
+  //     }
+  // }
 
   getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -283,39 +331,11 @@ class Scene1 extends Phaser.Scene {
   }
 
   //#region CONTROLLER FUNCTIONS
-  // TODO: check if the player actually moves, otherwise a turn still goes !!!
-  // whenKeyUPPressed() {
-  //   if (this.playerTurn && this.playerTurns != 0) {
-  //     this.walkSound.play();
-  //     this.gridEngine.move("player", "up");
-  //     this.playerMoveFinished();
-  //   }
-  // }
-  // whenKeyDOWNPressed() {
-  //   if (this.playerTurn && this.playerTurns != 0) {
-  //     this.walkSound.play();
-  //     this.gridEngine.move("player", "down");
-  //     this.playerMoveFinished();
-  //   }
-  // }
-  // whenKeyLEFTPressed() {
-  //   if (this.playerTurn && this.playerTurns != 0) {
-  //     this.walkSound.play();
-  //     this.gridEngine.move("player", "left");
-  //     this.playerMoveFinished();
-  //   }
-  // }
-  // whenKeyRIGHTPressed() {
-  //   if (this.playerTurn && this.playerTurns != 0) {
-  //     this.walkSound.play();
-  //     this.gridEngine.move("player", "right");
-  //     this.playerMoveFinished();
-  //   }
-  // }
+
   whenKeyQPressed() {
     if ((this.playerTurn && this.playerTurns != 0)) {
       // Check if the player is in range to any enemies for each enemy character
-      let characterArray = this.characterDatabase.characters;
+      let characterArray = this.gridEngineConfig.characters;
 
       characterArray.forEach(character => {
         if (character.id != "player") {
@@ -372,17 +392,6 @@ class Scene1 extends Phaser.Scene {
   startGame() {
     // this.registry.set("playerTurns", this.playerTurnsMax);
     this.registry.set("playerHealth", this.playerHealth);
-
-    this.musicSound.play();
-
-    let characterArray = this.characterDatabase.characters;
-
-    characterArray.forEach(character => {
-      if (character.id == "player") {
-        this.playerRef = character;
-      }
-    });
-
     // this.playerMoveBegin();
   }
 
@@ -437,8 +446,8 @@ class Scene1 extends Phaser.Scene {
     this.setThisSprite.destroy();
 
     // remove data from array
-    const removeFromDatabase = this.characterDatabase.characters.findIndex(item => item.id === character);
-    this.characterDatabase.characters.splice(removeFromDatabase, 1);
+    const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
+    this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
   }
 
   // // Called after every player move.
