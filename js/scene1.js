@@ -43,6 +43,8 @@ class Scene1 extends Phaser.Scene {
     this.dialogueOpen = false;
     this.keyPickedUp = false;
     this.deliveredKey = false;
+
+    this.unnecessaryVariable = 0;
     //#endregion
   }
 
