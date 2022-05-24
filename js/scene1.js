@@ -11,7 +11,6 @@ class Scene1 extends Phaser.Scene {
 
   preload() {
     //#region LOAD RESOURCES
-    this.load.image("tileSet", "images/tileset.png");
     this.load.image("tileSetSproutland", "images/tileset-sproutland.png");
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
     // just a comment to see
@@ -124,15 +123,15 @@ class Scene1 extends Phaser.Scene {
   generateTilemap() {
     const tileMap = this.make.tilemap({ key: "map" });
     // "name of tileset in Tiled", "name of phaser tileset reference"
-    const tileset = tileMap.addTilesetImage("tileset", "tileSet");
+    // const tileset = tileMap.addTilesetImage("tileset", "tileSet");
     const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
     // layer names from Tiled ( tileset, x, y ) https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
-    const bgLayer = tileMap.createLayer("BG", [tileset, tilesetSproutland], 0, 0);
-    const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
-    const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
-    const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
-    const fenceLayer = tileMap.createLayer("Fence", [tileset, tilesetSproutland], 0, 0);
-    const roofLayer = tileMap.createLayer("Roof", [tileset, tilesetSproutland], 0, 0);
+    const bgLayer = tileMap.createLayer("BG", [tilesetSproutland], 0, 0);
+    const groundLayer = tileMap.createLayer("Ground", [tilesetSproutland], 0, 0);
+    const worldLayer = tileMap.createLayer("World", [tilesetSproutland], 0, 0);
+    const world2Layer = tileMap.createLayer("World2", [tilesetSproutland], 0, 0);
+    const fenceLayer = tileMap.createLayer("Fence", [tilesetSproutland], 0, 0);
+    const roofLayer = tileMap.createLayer("Roof", [tilesetSproutland], 0, 0);
 
     // Make array of collisionLayers to enable setCollisionByProperty and debug collision
     const collisionLayers = [worldLayer, fenceLayer];
@@ -186,6 +185,7 @@ class Scene1 extends Phaser.Scene {
 
   generateNPC() {
     const spr = this.add.sprite(0, 0, "npc");
+    this.physics.add.existing(spr);
 
     this.gridEngineConfig.characters.push({
       id: `npc_1`,
@@ -309,8 +309,7 @@ class Scene1 extends Phaser.Scene {
   checkRangeOverlap(range, character) {
     // check that there is a character by that name
     let isCharacter = false;
-
-    console.log(character);
+    // console.log(character);
 
     for (let char of this.gridEngineConfig.characters) {
       if (char.id == character) {
