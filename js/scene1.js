@@ -14,6 +14,7 @@ class Scene1 extends Phaser.Scene {
     this.load.image("tileSet", "images/tileset.png");
     this.load.image("tileSetSproutland", "images/tileset-sproutland.png");
     this.load.tilemapTiledJSON("map", "source/tileMap.json");
+    // just a comment to see
     // this.load.tilemapTiledJSONExternal('map', 'source/tilemap.json');
 
     this.load.spritesheet("player", "images/spritesheet-custom-2.png", {
