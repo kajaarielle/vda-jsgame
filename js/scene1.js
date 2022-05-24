@@ -24,22 +24,14 @@ class Scene1 extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
-    this.load.spritesheet("dragon", "images/dragon-spritesheet.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("charactersheet", "images/characters.png", {
-      frameWidth: 52,
-      frameHeight: 72,
-    });
     this.load.spritesheet("chicken", "images/chicken.png", {
       frameWidth: 16,
       frameHeight: 16,
     });
 
     this.load.audio("music", ["audio/music.mp3"]);
-    this.load.audio("attack", ["audio/attack.mp3"]);
-    this.load.audio("walk", ["audio/walk.mp3"]);
+    // this.load.audio("attack", ["audio/attack.mp3"]);
+    // this.load.audio("walk", ["audio/walk.mp3"]);
     //#endregion
 
     //#region SET VARIABLES
@@ -80,7 +72,6 @@ class Scene1 extends Phaser.Scene {
       ],
     };
 
-
     //#region AI/NPC CHARACTERS
     this.generateNPC();
     this.generateChicken();
@@ -118,21 +109,14 @@ class Scene1 extends Phaser.Scene {
     }
     //#endregion
 
-    // Last stuff to do
-    this.bullets = new Bullets(this);
-
-    // this.input.on('pointerdown', function (pointer) {
-    //   this.attack(this.player, this.player.attack);
-    // }, this);
-
     this.registry.set("playerHealth", this.player.maxHealth);
     this.registry.set("textUI", "closeUI");
     this.dialogueOpen = false;
   }
 
   generateSounds() {
-    this.attackSound = this.sound.add("attack", { loop: false });
-    this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
+    // this.attackSound = this.sound.add("attack", { loop: false });
+    // this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
     this.musicSound = this.sound.add("music", { loop: true, volume: 0.1 });
 
     this.musicSound.play();
@@ -247,12 +231,8 @@ class Scene1 extends Phaser.Scene {
       }
       else if (character.id == "player") {
         this.playerRef = character;
-        console.log("Player is set as reference");
       }
     }
-    console.log(this.npcArray);
-    console.log(this.chickenArray);
-    console.log(this.playerRef);
   }
 
   update() {
@@ -296,20 +276,6 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
-  // attack(attacker, attacks) {
-  //   this.attackSound.play();
-  //   // this.playAttackAnimation("melee"); // check direction!
-  //   for (let enemy of this.enemyArray) {
-  //     this.currentEnemy = enemy;
-  //     this.playerCanAttackMelee = this.checkRangeOverlap(1, this.currentEnemy.id);
-  //     if (this.playerCanAttackMelee && this.currentEnemy != null) {
-  //       this.dealDamageToEnemy(this.playerRef.attackDMG);
-  //       console.log("ATTACKED");
-  //       break;
-  //     }
-  //   }
-  // }
-
   //#region CUSTOM FUNCTIONS
 
   //   generateCollectables () {
@@ -343,67 +309,65 @@ class Scene1 extends Phaser.Scene {
       yoyo: true,
     });
   }
-  createEnemyAnimation(character, name, startFrame, endFrame) {
-    this.anims.create({
-      key: name,
-      frames: this.anims.generateFrameNumbers(character, {
-        start: startFrame,
-        end: endFrame,
-      }),
-      frameRate: 6,
-      repeat: 0,
-      yoyo: true,
-    });
-  }
+  // createEnemyAnimation(character, name, startFrame, endFrame) {
+  //   this.anims.create({
+  //     key: name,
+  //     frames: this.anims.generateFrameNumbers(character, {
+  //       start: startFrame,
+  //       end: endFrame,
+  //     }),
+  //     frameRate: 6,
+  //     repeat: 0,
+  //     yoyo: true,
+  //   });
+  // }
 
-  //#region CONTROLLER FUNCTIONS
+  // //#region CONTROLLER FUNCTIONS
+  // playAttackAnimation() {
+  //   let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
+  //   let melee = "MeleeAttack";
+  //   console.log(direction);
+  //   this.gridEngine.stopMovement("player");
+  //   this.player.anims.play(direction + melee);
 
-  playAttackAnimation() {
-    let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
-    let melee = "MeleeAttack";
-    console.log(direction);
-    this.gridEngine.stopMovement("player");
-    this.player.anims.play(direction + melee);
-
-  }
-
+  // }
 
   //#region TURNBASED
 
-  dealDamageToEnemy(damage) {
-    this.attackSound.play();
-    this.currentNPC.healthCurrent = this.currentNPC.healthCurrent - damage;
-    console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentNPC.healthCurrent);
-    this.checkIfEnemyDead();
-  }
+  // dealDamageToEnemy(damage) {
+  //   this.attackSound.play();
+  //   this.currentNPC.healthCurrent = this.currentNPC.healthCurrent - damage;
+  //   console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentNPC.healthCurrent);
+  //   this.checkIfEnemyDead();
+  // }
 
-  checkIfEnemyDead() {
-    if (this.currentNPC.healthCurrent <= 0) {
-      this.killCharacterAndSprite(this.currentNPC.id, this.currentNPC.sprite);
-    }
-  }
+  // checkIfEnemyDead() {
+  //   if (this.currentNPC.healthCurrent <= 0) {
+  //     this.killCharacterAndSprite(this.currentNPC.id, this.currentNPC.sprite);
+  //   }
+  // }
 
-  killCharacterAndSprite(character, sprite) {
-    this.gridEngine.removeCharacter(character);
-    this.currentNPC = null;
-    console.log(this.gridEngine.getAllCharacters());
-    this.setThisSprite = sprite;
-    this.setThisSprite.destroy();
+  // killCharacterAndSprite(character, sprite) {
+  //   this.gridEngine.removeCharacter(character);
+  //   this.currentNPC = null;
+  //   console.log(this.gridEngine.getAllCharacters());
+  //   this.setThisSprite = sprite;
+  //   this.setThisSprite.destroy();
 
-    // remove data from array
-    const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
-    this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
+  //   // remove data from array
+  //   const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
+  //   this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
 
-    this.npcArray = [];
-    const characters = this.gridEngineConfig.characters;
-    for (const character of characters) {
-      if (character.id !== 'player') {
-        if (character.id.includes("enemy")) {
-          this.npcArray.push(character);
-        }
-      }
-    }
-  }
+  //   this.npcArray = [];
+  //   const characters = this.gridEngineConfig.characters;
+  //   for (const character of characters) {
+  //     if (character.id !== 'player') {
+  //       if (character.id.includes("enemy")) {
+  //         this.npcArray.push(character);
+  //       }
+  //     }
+  //   }
+  // }
 
   //#region ENEMY TURN
   // async enemyTurn() {
@@ -424,86 +388,86 @@ class Scene1 extends Phaser.Scene {
   //   }
   // }
 
-  enemyDoSomething(enemy) {
-    let canMove = true;
-    let canHeal = false;
-    let canAttackRange = this.checkRangeOverlap(this.currentNPC.attack.range, this.currentNPC.id);
-    let canAttackMelee = this.checkRangeOverlap(1, this.currentNPC.id);
+  // enemyDoSomething(enemy) {
+  //   let canMove = true;
+  //   let canHeal = false;
+  //   let canAttackRange = this.checkRangeOverlap(this.currentNPC.attack.range, this.currentNPC.id);
+  //   let canAttackMelee = this.checkRangeOverlap(1, this.currentNPC.id);
 
-    if (this.currentNPC.health.current != this.currentNPC.health.max)
-      canHeal = true;
+  //   if (this.currentNPC.health.current != this.currentNPC.health.max)
+  //     canHeal = true;
 
-    let possibleMoves = [];
+  //   let possibleMoves = [];
 
-    if (canMove)
-      possibleMoves.push("canMove");
-    if (canAttackRange)
-      possibleMoves.push("canAttackRange");
-    if (canAttackMelee)
-      possibleMoves.push("canAttackMelee");
-    if (canHeal)
-      possibleMoves.push("canHeal");
+  //   if (canMove)
+  //     possibleMoves.push("canMove");
+  //   if (canAttackRange)
+  //     possibleMoves.push("canAttackRange");
+  //   if (canAttackMelee)
+  //     possibleMoves.push("canAttackMelee");
+  //   if (canHeal)
+  //     possibleMoves.push("canHeal");
 
-    let randomMove = Phaser.Math.RND.pick(possibleMoves);
+  //   let randomMove = Phaser.Math.RND.pick(possibleMoves);
 
-    if (randomMove == "canMove") {
-      // check if the character can move in x direction, if they can, make it possible move. 
-      // https://annoraaq.github.io/grid-engine/typedoc/classes/GridEngine.html#isTileBlocked
+  //   if (randomMove == "canMove") {
+  //     // check if the character can move in x direction, if they can, make it possible move. 
+  //     // https://annoraaq.github.io/grid-engine/typedoc/classes/GridEngine.html#isTileBlocked
 
-      switch (this.getRandomIntFromMax(4)) {
-        case 0:
-          this.walkSound.play();
-          this.gridEngine.move(this.currentNPC.id, "right");
-          this.flipSprite(this.currentNPC.sprite, "right");
-          break;
-        case 1:
-          this.walkSound.play();
-          this.gridEngine.move(this.currentNPC.id, "left");
-          this.flipSprite(this.currentNPC.sprite, "left");
-          break;
-        case 2:
-          this.walkSound.play();
-          this.gridEngine.move(this.currentNPC.id, "up");
-          break;
-        case 3:
-          this.walkSound.play();
-          this.gridEngine.move(this.currentNPC.id, "down");
-          break;
-      }
-    }
+  //     switch (this.getRandomIntFromMax(4)) {
+  //       case 0:
+  //         this.walkSound.play();
+  //         this.gridEngine.move(this.currentNPC.id, "right");
+  //         this.flipSprite(this.currentNPC.sprite, "right");
+  //         break;
+  //       case 1:
+  //         this.walkSound.play();
+  //         this.gridEngine.move(this.currentNPC.id, "left");
+  //         this.flipSprite(this.currentNPC.sprite, "left");
+  //         break;
+  //       case 2:
+  //         this.walkSound.play();
+  //         this.gridEngine.move(this.currentNPC.id, "up");
+  //         break;
+  //       case 3:
+  //         this.walkSound.play();
+  //         this.gridEngine.move(this.currentNPC.id, "down");
+  //         break;
+  //     }
+  //   }
 
-    else if (randomMove == "canAttackRange") {
-      //attack range
-      this.dealDamageToPlayer(this.currentNPC.attack.rangeDMG);
-    }
+  //   else if (randomMove == "canAttackRange") {
+  //     //attack range
+  //     this.dealDamageToPlayer(this.currentNPC.attack.rangeDMG);
+  //   }
 
-    else if (randomMove == "canAttackMelee") {
-      // attack melee
-      this.dealDamageToPlayer(this.currentNPC.attack.meleeDMG);
-    }
+  //   else if (randomMove == "canAttackMelee") {
+  //     // attack melee
+  //     this.dealDamageToPlayer(this.currentNPC.attack.meleeDMG);
+  //   }
 
-    else if (randomMove == "canHeal") {
-      this.currentNPC.health.current = this.currentNPC.health.current + 1;
-      console.log("Enemy healed! " + this.currentNPC.id);
-    }
-  }
+  //   else if (randomMove == "canHeal") {
+  //     this.currentNPC.health.current = this.currentNPC.health.current + 1;
+  //     console.log("Enemy healed! " + this.currentNPC.id);
+  //   }
+  // }
 
-  dealDamageToPlayer(damage) {
-    console.log("ATTACK DMG: " + damage + " from " + this.currentNPC.id);
-    this.attackSound.play();
-    this.player.healthCurrent = this.player.healthCurrent - damage;
-    this.registry.set("playerHealth", this.player.healthCurrent);
-    this.updateTextInUI(this.healthUI);
-  }
+  // dealDamageToPlayer(damage) {
+  //   console.log("ATTACK DMG: " + damage + " from " + this.currentNPC.id);
+  //   this.attackSound.play();
+  //   this.player.healthCurrent = this.player.healthCurrent - damage;
+  //   this.registry.set("playerHealth", this.player.healthCurrent);
+  //   this.updateTextInUI(this.healthUI);
+  // }
 
-  resetPlayerTurn() {
-    this.playerTurn = true;
-    this.playerTurns = this.playerTurnsMax;
-    this.updateTextInUI(this.playerTurnsUI);
-    this.playerMoveBegin();
-  }
-  //#endregion
-  //#endregion
+  // resetPlayerTurn() {
+  //   this.playerTurn = true;
+  //   this.playerTurns = this.playerTurnsMax;
+  //   this.updateTextInUI(this.playerTurnsUI);
+  //   this.playerMoveBegin();
+  // }
+  // //#endregion
+  // //#endregion
 
   //#region OTHER FUNCTIONS
   checkRangeOverlap(range, character) {
@@ -526,44 +490,44 @@ class Scene1 extends Phaser.Scene {
     return Math.abs(a - b);
   }
 
-  flipSprite(sprite, direction) {
-    this.setThisSprite = sprite;
-    let flipX;
+  // flipSprite(sprite, direction) {
+  //   this.setThisSprite = sprite;
+  //   let flipX;
 
-    if (direction == "left") {
-      flipX = true;
-    }
-    if (direction == "right") {
-      flipX = false;
-    }
+  //   if (direction == "left") {
+  //     flipX = true;
+  //   }
+  //   if (direction == "right") {
+  //     flipX = false;
+  //   }
 
-    this.setThisSprite.flipX = flipX;
-  }
+  //   this.setThisSprite.flipX = flipX;
+  // }
 
   getRandomIntFromMax(max) {
     return Math.floor(Math.random() * max);
   }
   //#endregion
 
-  //#region UI
-  updateTextInUI(nameUI) {
-    if (nameUI == this.playerTurnsUI)
-      this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
-    if (nameUI == this.healthUI)
-      this.healthUI.setText('Health: ' + this.player.healthCurrent);
-  }
+  // //#region UI
+  // updateTextInUI(nameUI) {
+  //   if (nameUI == this.playerTurnsUI)
+  //     this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
+  //   if (nameUI == this.healthUI)
+  //     this.healthUI.setText('Health: ' + this.player.healthCurrent);
+  // }
 
-  visibilityUI(nameUI, visibility) {
-    let visible = visibility;
-    this.setThisUI = nameUI;
+  // visibilityUI(nameUI, visibility) {
+  //   let visible = visibility;
+  //   this.setThisUI = nameUI;
 
-    if (visible) {
-      this.setThisUI.visible = true;
-    }
-    else {
-      this.setThisUI.visible = false;
-    }
-  }
-  //#endregion
+  //   if (visible) {
+  //     this.setThisUI.visible = true;
+  //   }
+  //   else {
+  //     this.setThisUI.visible = false;
+  //   }
+  // }
+  // //#endregion
   //#endregion
 }
