@@ -7,8 +7,8 @@
   }
   
   body {
-    font-family: HK Grotesk;
-    background: #333; /* background color outside of the game canvas */
+    font-family: 'Courier New', Courier, monospace;
+    background: rgb(186, 220, 234); /* background color outside of the game canvas */
     padding: 0;
     margin: 0;
     /*   overflow: hidden; */
@@ -20,14 +20,13 @@
     display: block;
     position: relative;
     margin: 0 auto;
-    margin-top: 20px;
-    outline: 1px solid white;
+    outline: 8px solid black;
   /*   position: relative;
     width: 1024px;
     height: 1024px; */
   }
   div.instructions {
-    color: white;
+    color: black;
     text-align: center;
     padding: 10px;
   }

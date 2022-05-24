@@ -13,11 +13,16 @@ class Scene1 extends Phaser.Scene {
     //#region LOAD RESOURCES
     this.load.image("tileSet", "images/tileset.png");
     this.load.image("tileSetSproutland", "images/tileset-sproutland.png");
-    this.load.tilemapTiledJSON("map", "source/tileMap.json");
+    // this.load.tilemapTiledJSON("map", "source/tileMap.json");
+    this.load.tilemapTiledJSONExternal('map', 'source/tilemap.json');
 
-    this.load.spritesheet("player", "images/cat-full.png", {
-      frameWidth: 48,
-      frameHeight: 48,
+    this.load.spritesheet("player", "images/spritesheet-custom-2.png", {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+    this.load.spritesheet("npc", "images/spritesheet-custom-npc.png", {
+      frameWidth: 16,
+      frameHeight: 16,
     });
     this.load.spritesheet("dragon", "images/dragon-spritesheet.png", {
       frameWidth: 24,
@@ -39,8 +44,11 @@ class Scene1 extends Phaser.Scene {
 
     //#region SET VARIABLES
     this.pixelSize = 16;
-    this.mapTileSize = 32;
+    this.mapTileSizeX = 32;
+    this.mapTileSizeY = 16;
     this.debugMode = false;
+    this.npcsTalkedTo = 0;
+    this.dialogueOpen = false;
     //#endregion
   }
 
@@ -66,13 +74,12 @@ class Scene1 extends Phaser.Scene {
           id: "player",
           sprite: this.player,
           walkingAnimationMapping: 0,
-          startPosition: { x: 2, y: 2 },
-          offsetY: 16,
+          startPosition: { x: 2, y: 5 },
           attackDMG: 2,
         },
       ],
     };
-    
+
 
     //#region AI/NPC CHARACTERS
     this.generateNPC();
@@ -86,14 +93,14 @@ class Scene1 extends Phaser.Scene {
     //#endregion
 
     //#region CAMERA
-    this.cameras.main.setBounds(0, 0, (this.mapTileSize * this.pixelSize), (this.mapTileSize * this.pixelSize));
+    this.cameras.main.setBounds(0, 0, (this.mapTileSizeX * this.pixelSize), (this.mapTileSizeY * this.pixelSize));
     this.cameras.main.startFollow(this.player);
     //#endregion
 
     //#region UI
-    this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
-    this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.player.healthMax).setScrollFactor(0);
-    this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
+    // this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
+    // this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.player.healthMax).setScrollFactor(0);
+    // this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
     //#endregion
 
     //#region DEBUG MODE
@@ -119,6 +126,8 @@ class Scene1 extends Phaser.Scene {
     // }, this);
 
     this.registry.set("playerHealth", this.player.maxHealth);
+    this.registry.set("textUI", "closeUI");
+    this.dialogueOpen = false;
   }
 
   generateSounds() {
@@ -135,6 +144,7 @@ class Scene1 extends Phaser.Scene {
     const tileset = tileMap.addTilesetImage("tileset", "tileSet");
     const tilesetSproutland = tileMap.addTilesetImage("tileset-sproutland", "tileSetSproutland");
     // layer names from Tiled ( tileset, x, y ) https://phaser.io/docs/2.4.4/Phaser.TilemapLayer.html
+    const bgLayer = tileMap.createLayer("BG", [tileset, tilesetSproutland], 0, 0);
     const groundLayer = tileMap.createLayer("Ground", [tileset, tilesetSproutland], 0, 0);
     const worldLayer = tileMap.createLayer("World", [tileset, tilesetSproutland], 0, 0);
     const world2Layer = tileMap.createLayer("World2", [tileset, tilesetSproutland], 0, 0);
@@ -156,7 +166,7 @@ class Scene1 extends Phaser.Scene {
       0, 0,
       "player"
     );
-    this.physics.add.existing(player);         
+    this.physics.add.existing(player);
 
     player.healthMax = 100;
     player.healthCurrent = player.healthMax;
@@ -169,7 +179,7 @@ class Scene1 extends Phaser.Scene {
 
   characterMoveHandler() {
     this.npcArray.forEach(npc => {
-      this.gridEngine.moveRandomly(npc.id, this.getRandomInt(0, 1500));
+      this.gridEngine.moveRandomly(npc.id, this.getRandomInt(0, 1500), 2);
     });
     this.chickenArray.forEach(chicken => {
       this.gridEngine.moveRandomly(chicken.id, this.getRandomInt(0, 1500));
@@ -193,20 +203,33 @@ class Scene1 extends Phaser.Scene {
   }
 
   generateNPC() {
-    for (let x = 4; x <= 7; x++) {
-      for (let y = 5; y <= 8; y++) {
-        const spr = this.add.sprite(0, 0, "charactersheet");
-        spr.scale = 0.25;
-        this.physics.add.existing(spr);
-        this.gridEngineConfig.characters.push({
-          id: `npc${x}#${y}`,
-          sprite: spr,
-          walkingAnimationMapping: this.getRandomInt(0, 6),
-          startPosition: { x, y },
-          speed: 2,
-        });
-      }
-    }
+    const spr = this.add.sprite(0, 0, "npc");
+    // spr.scale = 0.25;
+    this.physics.add.existing(spr);
+
+    this.gridEngineConfig.characters.push({
+      id: `npc_1`,
+      sprite: spr,
+      walkingAnimationMapping: 0,
+      startPosition: { x: 12, y: 4 },
+      speed: 2,
+    });
+
+
+    // for (let x = 4; x <= 7; x++) {
+    //   for (let y = 5; y <= 8; y++) {
+    //     const spr = this.add.sprite(0, 0, "charactersheet");
+    //     spr.scale = 0.25;
+    //     this.physics.add.existing(spr);
+    //     this.gridEngineConfig.characters.push({
+    //       id: `npc${x}#${y}`,
+    //       sprite: spr,
+    //       walkingAnimationMapping: this.getRandomInt(0, 6),
+    //       startPosition: { x, y },
+    //       speed: 2,
+    //     });
+    //   }
+    // }
   }
   makeSpecificCharacterArrays() {
     this.npcArray = [];
@@ -249,17 +272,28 @@ class Scene1 extends Phaser.Scene {
   }
 
   whenKeySpacePressed() {
-    // console.log("SPACE!");
+    console.log("SPACE!");
+
     let canTalk = false;
-    for (let npc of this.npcArray) {
-          this.currentNPC = npc;
-          canTalk = this.checkRangeOverlap(1, this.currentNPC.id);
-          if (canTalk && this.currentNPC != null) {
-            // TALK
-            console.log("TALK");
-            break;
-          }
+
+    if (!this.dialogueOpen) {
+      for (let npc of this.npcArray) {
+        this.currentNPC = npc;
+        canTalk = this.checkRangeOverlap(1, this.currentNPC.id);
+
+        if (canTalk) {
+          this.gridEngine.stopMovement(this.currentNPC.id);
+          this.registry.set("textUI", "openUI");
+          this.dialogueOpen = true;
+          break;
         }
+      }
+    }
+    else {
+      this.registry.set("textUI", "closeUI");
+      this.dialogueOpen = false;
+      this.gridEngine.moveRandomly(this.currentNPC.id, this.getRandomInt(0, 1500), 2);
+    }
   }
 
   // attack(attacker, attacks) {
@@ -328,9 +362,9 @@ class Scene1 extends Phaser.Scene {
     let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
     let melee = "MeleeAttack";
     console.log(direction);
-      this.gridEngine.stopMovement("player");
-      this.player.anims.play(direction + melee);
-    
+    this.gridEngine.stopMovement("player");
+    this.player.anims.play(direction + melee);
+
   }
 
 

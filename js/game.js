@@ -3,9 +3,9 @@ var config = {
     parent: "phaser-example",
     backgroundColor: "#0055aa",
     scene: [Scene1, SceneUI],
-    width: 256,
-    height: 256,
-    zoom: 3,
+    width: 160,
+    height: 128,
+    zoom: 4,
     pixelArt: true,
     physics: {
       default: "arcade",
