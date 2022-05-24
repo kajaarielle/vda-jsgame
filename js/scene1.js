@@ -195,6 +195,7 @@ class Scene1 extends Phaser.Scene {
       speed: 2,
     });
   }
+  
   makeSpecificCharacterArrays() {
     this.npcArray = [];
     this.chickenArray = [];
@@ -286,7 +287,6 @@ class Scene1 extends Phaser.Scene {
     }
   }
 
-
   getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -320,8 +320,7 @@ class Scene1 extends Phaser.Scene {
         isCharacter = false;
       }
     }
-
-    console.log(isCharacter);
+    // console.log(isCharacter);
 
     if (isCharacter) {
       this.rangeOverlap;
@@ -339,7 +338,6 @@ class Scene1 extends Phaser.Scene {
     } else {
       return this.rangeOverlap = false;
     }
-
   }
 
   getDifference(a, b) {
