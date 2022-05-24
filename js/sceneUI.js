@@ -19,9 +19,9 @@ class SceneUI extends Phaser.Scene {
     const screenCenterY = 104;
     this.textDialogue = this.add.text(screenCenterX, screenCenterY, '', style).setOrigin(0.5);
     this.textRect.alpha = 0;
-    
+
     this.numberTalkedTo = 0;
-    
+
     // //  Check the Registry and hit our callback every time the 'score' value is updated
     this.registry.events.on('changedata', this.updateData, this);
   }
@@ -34,20 +34,36 @@ class SceneUI extends Phaser.Scene {
       this.turnsText.setText('Turns: ' + data);
     }
     else if (key === 'textUI') {
-      
+
       if (data == "closeUI") {
         // close ui
-        this.textDialogue.alpha = 0; 
+        this.textDialogue.alpha = 0;
         this.textRect.alpha = 0;
-        
+
       } else {
         // enable ui
-        this.textDialogue.alpha = 1; 
+        this.textDialogue.alpha = 1;
         this.textRect.alpha = 1;
 
         this.textDialogue.text = this.getUIText();
         this.numberTalkedTo++;
       }
+    }
+    else if (key === 'openUIKey') {
+      if (this.numberTalkedTo > 0) {
+        this.textDialogue.text = "Looks like the lost key!";
+      } else {
+        this.textDialogue.text = "Looks like a lost key.";
+      }
+      this.textDialogue.alpha = 1;
+      this.textRect.alpha = 1;
+      this.foundKey = data;
+    }
+    else if (key === 'thankyouUI') {
+      this.textDialogue.text = this.getUITextDelivered();
+      this.textDialogue.alpha = 1;
+      this.textRect.alpha = 1;
+      this.numberTalkedTo++;
     }
   }
 
@@ -62,12 +78,26 @@ class SceneUI extends Phaser.Scene {
       case 2:
         return "I lost my key!";
         break;
-        case 2:
-          return "I can't leave without it.";
-          break;
+      case 3:
+        return "I can't leave without it.";
+        break;
       default:
         this.numberTalkedTo = 0;
         return "Go take a look around.";
+        break;
+    }
+  }
+  getUITextDelivered() {
+    switch (this.numberTalkedTo) {
+      case 1:
+        return "You found it!";
+        break;
+      case 2:
+        return "Now I can go out.";
+        break;
+      default:
+        this.numberTalkedTo = 0;
+        return "Thank you.";
         break;
     }
   }

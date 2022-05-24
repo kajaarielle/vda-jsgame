@@ -28,6 +28,7 @@ class Scene1 extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
+    this.load.image("key", "images/key.png");
 
     this.load.audio("music", ["audio/music.mp3"]);
     //#endregion
@@ -39,6 +40,8 @@ class Scene1 extends Phaser.Scene {
     this.debugMode = false;
     this.npcsTalkedTo = 0;
     this.dialogueOpen = false;
+    this.keyPickedUp = false;
+    this.deliveredKey = false;
     //#endregion
   }
 
@@ -54,6 +57,7 @@ class Scene1 extends Phaser.Scene {
       right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
     //#endregion
+    this.key = this.add.sprite(0, 0, "key");
 
     this.generateSounds();
     const { tileMap, collisionLayers } = this.generateTilemap();
@@ -65,8 +69,12 @@ class Scene1 extends Phaser.Scene {
           sprite: this.player,
           walkingAnimationMapping: 0,
           startPosition: { x: 2, y: 5 },
-          attackDMG: 2,
         },
+        {
+          id: "key",
+          sprite: this.key,
+          startPosition: { x: 25, y: 1 },
+        }
       ],
     };
 
@@ -162,7 +170,6 @@ class Scene1 extends Phaser.Scene {
     for (let x = 11; x <= 13; x++) {
       for (let y = 15; y <= 18; y++) {
         const spr = this.add.sprite(0, 0, "chicken");
-        this.physics.add.existing(spr);
         this.gridEngineConfig.characters.push({
           id: `chicken${x}#${y}`,
           sprite: spr,
@@ -176,8 +183,6 @@ class Scene1 extends Phaser.Scene {
 
   generateNPC() {
     const spr = this.add.sprite(0, 0, "npc");
-    // spr.scale = 0.25;
-    this.physics.add.existing(spr);
 
     this.gridEngineConfig.characters.push({
       id: `npc_1`,
@@ -224,26 +229,60 @@ class Scene1 extends Phaser.Scene {
   }
 
   whenKeySpacePressed() {
-    let canTalk = false;
 
     if (!this.dialogueOpen) {
-      for (let npc of this.npcArray) {
-        this.currentNPC = npc;
-        canTalk = this.checkRangeOverlap(1, this.currentNPC.id);
-        if (canTalk) {
-          this.gridEngine.stopMovement(this.currentNPC.id);
-          this.registry.set("textUI", "openUI");
-          this.dialogueOpen = true;
-          break;
+      // dialogue is NOT open
+      if (!this.keyPickedUp) {
+        this.itIsAKey = this.checkRangeOverlap(1, "key");
+
+        if (this.itIsAKey) {
+          console.log("It is a key");
+          // destroy it and open UI
+          this.gridEngine.removeCharacter("key");
+          const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === "key");
+          this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
+          this.setThisSprite = this.key;
+          this.setThisSprite.destroy();
+          // this.registry.set("openUIKey", true);
+          // this.dialogueOpen = true;
+          this.keyPickedUp = true;
+        } else {
+          // if it is NOT a key
+          let canTalk = false;
+
+          canTalk = this.checkRangeOverlap(1, "npc_1");
+          if (canTalk) {
+            this.gridEngine.stopMovement("npc_1");
+            this.registry.set("textUI", "openUI");
+            this.dialogueOpen = true;
+          }
         }
+      } else {
+        // key IS picked up
+        let canTalk = false;
+
+          canTalk = this.checkRangeOverlap(1, "npc_1");
+          console.log(canTalk + " talk");
+          if (canTalk) {
+            this.gridEngine.stopMovement("npc_1");
+            this.registry.set("thankyouUI", true);
+            this.dialogueOpen = true;
+            this.deliveredKey = true;
+          }
       }
-    }
-    else {
+    } else {
+      // if dialogue IS open, close it
       this.registry.set("textUI", "closeUI");
       this.dialogueOpen = false;
-      this.gridEngine.moveRandomly(this.currentNPC.id, this.getRandomInt(0, 1500), 2);
+      
+      if(this.deliveredKey) {
+          this.gridEngine.moveRandomly("npc_1", this.getRandomInt(0, 1500));
+      } else {
+        this.gridEngine.moveRandomly("npc_1", this.getRandomInt(0, 1500), 2);
+      }
     }
   }
+
 
   getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -265,18 +304,39 @@ class Scene1 extends Phaser.Scene {
   }
 
   checkRangeOverlap(range, character) {
-    let rangeOverlap;
-    let playerPos = this.gridEngine.getPosition("player");
-    let characterPos = this.gridEngine.getPosition(character);
-    let diffX = this.getDifference(characterPos.x, playerPos.x);
-    let diffY = this.getDifference(characterPos.y, playerPos.y);
+    // check that there is a character by that name
+    let isCharacter = false;
 
-    if (diffX <= range && diffY <= range) {
-      return rangeOverlap = true;
+    console.log(character);
+
+    for (let char of this.gridEngineConfig.characters) {
+      if (char.id == character) {
+        isCharacter = true;
+        break;
+      } else {
+        isCharacter = false;
+      }
     }
-    else {
-      return rangeOverlap = false;
+
+    console.log(isCharacter);
+
+    if (isCharacter) {
+      this.rangeOverlap;
+      let playerPos = this.gridEngine.getPosition("player");
+      let characterPos = this.gridEngine.getPosition(character);
+      let diffX = this.getDifference(characterPos.x, playerPos.x);
+      let diffY = this.getDifference(characterPos.y, playerPos.y);
+
+      if (diffX <= range && diffY <= range) {
+        return this.rangeOverlap = true;
+      }
+      else {
+        return this.rangeOverlap = false;
+      }
+    } else {
+      return this.rangeOverlap = false;
     }
+
   }
 
   getDifference(a, b) {
