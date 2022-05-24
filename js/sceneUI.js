@@ -14,17 +14,14 @@ class SceneUI extends Phaser.Scene {
 
   create() {
     this.textRect = this.add.rectangle(80, 104, 128, 32, 0x000000);
-
     const style = { font: "12px Arial", fill: "#fff", resolution: 32 };
     const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
-    // const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
     const screenCenterY = 104;
     this.textDialogue = this.add.text(screenCenterX, screenCenterY, '', style).setOrigin(0.5);
     this.textRect.alpha = 0;
     
-
     this.numberTalkedTo = 0;
-
+    
     // //  Check the Registry and hit our callback every time the 'score' value is updated
     this.registry.events.on('changedata', this.updateData, this);
   }
@@ -53,6 +50,7 @@ class SceneUI extends Phaser.Scene {
       }
     }
   }
+
   getUIText() {
     switch (this.numberTalkedTo) {
       case 0:
@@ -73,6 +71,5 @@ class SceneUI extends Phaser.Scene {
         break;
     }
   }
-
 }
 

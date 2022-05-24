@@ -30,8 +30,6 @@ class Scene1 extends Phaser.Scene {
     });
 
     this.load.audio("music", ["audio/music.mp3"]);
-    // this.load.audio("attack", ["audio/attack.mp3"]);
-    // this.load.audio("walk", ["audio/walk.mp3"]);
     //#endregion
 
     //#region SET VARIABLES
@@ -75,7 +73,6 @@ class Scene1 extends Phaser.Scene {
     //#region AI/NPC CHARACTERS
     this.generateNPC();
     this.generateChicken();
-    // this.generateEnemy();
 
     this.gridEngine.create(tileMap, this.gridEngineConfig);
 
@@ -86,12 +83,6 @@ class Scene1 extends Phaser.Scene {
     //#region CAMERA
     this.cameras.main.setBounds(0, 0, (this.mapTileSizeX * this.pixelSize), (this.mapTileSizeY * this.pixelSize));
     this.cameras.main.startFollow(this.player);
-    //#endregion
-
-    //#region UI
-    // this.playerTurnsUI = this.add.text(0, 0, 'Player turns: ' + this.playerTurns).setScrollFactor(0);
-    // this.healthUI = this.add.text(0, 24, 'HEALTH:' + this.player.healthMax).setScrollFactor(0);
-    // this.attackUI = this.add.text(0, 54, 'ATTACK').setScrollFactor(0);
     //#endregion
 
     //#region DEBUG MODE
@@ -115,10 +106,7 @@ class Scene1 extends Phaser.Scene {
   }
 
   generateSounds() {
-    // this.attackSound = this.sound.add("attack", { loop: false });
-    // this.walkSound = this.sound.add("walk", { loop: false, volume: 0.5 });
     this.musicSound = this.sound.add("music", { loop: true, volume: 0.1 });
-
     this.musicSound.play();
   }
 
@@ -198,22 +186,6 @@ class Scene1 extends Phaser.Scene {
       startPosition: { x: 12, y: 4 },
       speed: 2,
     });
-
-
-    // for (let x = 4; x <= 7; x++) {
-    //   for (let y = 5; y <= 8; y++) {
-    //     const spr = this.add.sprite(0, 0, "charactersheet");
-    //     spr.scale = 0.25;
-    //     this.physics.add.existing(spr);
-    //     this.gridEngineConfig.characters.push({
-    //       id: `npc${x}#${y}`,
-    //       sprite: spr,
-    //       walkingAnimationMapping: this.getRandomInt(0, 6),
-    //       startPosition: { x, y },
-    //       speed: 2,
-    //     });
-    //   }
-    // }
   }
   makeSpecificCharacterArrays() {
     this.npcArray = [];
@@ -252,15 +224,12 @@ class Scene1 extends Phaser.Scene {
   }
 
   whenKeySpacePressed() {
-    console.log("SPACE!");
-
     let canTalk = false;
 
     if (!this.dialogueOpen) {
       for (let npc of this.npcArray) {
         this.currentNPC = npc;
         canTalk = this.checkRangeOverlap(1, this.currentNPC.id);
-
         if (canTalk) {
           this.gridEngine.stopMovement(this.currentNPC.id);
           this.registry.set("textUI", "openUI");
@@ -275,21 +244,6 @@ class Scene1 extends Phaser.Scene {
       this.gridEngine.moveRandomly(this.currentNPC.id, this.getRandomInt(0, 1500), 2);
     }
   }
-
-  //#region CUSTOM FUNCTIONS
-
-  //   generateCollectables () {
-
-  //     this.collectables = this.game.add.group();
-  //     this.collectables.enableBody = true;
-  //     this.collectables.physicsBodyType = Phaser.Physics.ARCADE;
-
-  //     var amount = 100;
-  //     for (var i = 0; i < amount; i++) {
-  //         var point = this.getRandomLocation();
-  //         this.generateChest(point);
-  //     }
-  // }
 
   getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -309,170 +263,9 @@ class Scene1 extends Phaser.Scene {
       yoyo: true,
     });
   }
-  // createEnemyAnimation(character, name, startFrame, endFrame) {
-  //   this.anims.create({
-  //     key: name,
-  //     frames: this.anims.generateFrameNumbers(character, {
-  //       start: startFrame,
-  //       end: endFrame,
-  //     }),
-  //     frameRate: 6,
-  //     repeat: 0,
-  //     yoyo: true,
-  //   });
-  // }
 
-  // //#region CONTROLLER FUNCTIONS
-  // playAttackAnimation() {
-  //   let direction = this.gridEngine.getFacingDirection(this.playerRef.id);
-  //   let melee = "MeleeAttack";
-  //   console.log(direction);
-  //   this.gridEngine.stopMovement("player");
-  //   this.player.anims.play(direction + melee);
-
-  // }
-
-  //#region TURNBASED
-
-  // dealDamageToEnemy(damage) {
-  //   this.attackSound.play();
-  //   this.currentNPC.healthCurrent = this.currentNPC.healthCurrent - damage;
-  //   console.log("PLAYER ATTACKED ENEMY. Enemy health: " + this.currentNPC.healthCurrent);
-  //   this.checkIfEnemyDead();
-  // }
-
-  // checkIfEnemyDead() {
-  //   if (this.currentNPC.healthCurrent <= 0) {
-  //     this.killCharacterAndSprite(this.currentNPC.id, this.currentNPC.sprite);
-  //   }
-  // }
-
-  // killCharacterAndSprite(character, sprite) {
-  //   this.gridEngine.removeCharacter(character);
-  //   this.currentNPC = null;
-  //   console.log(this.gridEngine.getAllCharacters());
-  //   this.setThisSprite = sprite;
-  //   this.setThisSprite.destroy();
-
-  //   // remove data from array
-  //   const removeFromDatabase = this.gridEngineConfig.characters.findIndex(item => item.id === character);
-  //   this.gridEngineConfig.characters.splice(removeFromDatabase, 1);
-
-  //   this.npcArray = [];
-  //   const characters = this.gridEngineConfig.characters;
-  //   for (const character of characters) {
-  //     if (character.id !== 'player') {
-  //       if (character.id.includes("enemy")) {
-  //         this.npcArray.push(character);
-  //       }
-  //     }
-  //   }
-  // }
-
-  //#region ENEMY TURN
-  // async enemyTurn() {
-  //   let enemyTurnDone = false;
-  //   const characters = this.characterDatabase.characters;
-
-  //   for (const character of characters) {
-  //     if (character.id !== 'player') {
-  //       this.currentEnemy = character;
-  //       this.enemyDoSomething(this.currentEnemy);
-  //       await timer(500);
-  //     }
-  //   }
-
-  //   enemyTurnDone = true;
-  //   if (enemyTurnDone) {
-  //     this.resetPlayerTurn();
-  //   }
-  // }
-
-  // enemyDoSomething(enemy) {
-  //   let canMove = true;
-  //   let canHeal = false;
-  //   let canAttackRange = this.checkRangeOverlap(this.currentNPC.attack.range, this.currentNPC.id);
-  //   let canAttackMelee = this.checkRangeOverlap(1, this.currentNPC.id);
-
-  //   if (this.currentNPC.health.current != this.currentNPC.health.max)
-  //     canHeal = true;
-
-  //   let possibleMoves = [];
-
-  //   if (canMove)
-  //     possibleMoves.push("canMove");
-  //   if (canAttackRange)
-  //     possibleMoves.push("canAttackRange");
-  //   if (canAttackMelee)
-  //     possibleMoves.push("canAttackMelee");
-  //   if (canHeal)
-  //     possibleMoves.push("canHeal");
-
-  //   let randomMove = Phaser.Math.RND.pick(possibleMoves);
-
-  //   if (randomMove == "canMove") {
-  //     // check if the character can move in x direction, if they can, make it possible move. 
-  //     // https://annoraaq.github.io/grid-engine/typedoc/classes/GridEngine.html#isTileBlocked
-
-  //     switch (this.getRandomIntFromMax(4)) {
-  //       case 0:
-  //         this.walkSound.play();
-  //         this.gridEngine.move(this.currentNPC.id, "right");
-  //         this.flipSprite(this.currentNPC.sprite, "right");
-  //         break;
-  //       case 1:
-  //         this.walkSound.play();
-  //         this.gridEngine.move(this.currentNPC.id, "left");
-  //         this.flipSprite(this.currentNPC.sprite, "left");
-  //         break;
-  //       case 2:
-  //         this.walkSound.play();
-  //         this.gridEngine.move(this.currentNPC.id, "up");
-  //         break;
-  //       case 3:
-  //         this.walkSound.play();
-  //         this.gridEngine.move(this.currentNPC.id, "down");
-  //         break;
-  //     }
-  //   }
-
-  //   else if (randomMove == "canAttackRange") {
-  //     //attack range
-  //     this.dealDamageToPlayer(this.currentNPC.attack.rangeDMG);
-  //   }
-
-  //   else if (randomMove == "canAttackMelee") {
-  //     // attack melee
-  //     this.dealDamageToPlayer(this.currentNPC.attack.meleeDMG);
-  //   }
-
-  //   else if (randomMove == "canHeal") {
-  //     this.currentNPC.health.current = this.currentNPC.health.current + 1;
-  //     console.log("Enemy healed! " + this.currentNPC.id);
-  //   }
-  // }
-
-  // dealDamageToPlayer(damage) {
-  //   console.log("ATTACK DMG: " + damage + " from " + this.currentNPC.id);
-  //   this.attackSound.play();
-  //   this.player.healthCurrent = this.player.healthCurrent - damage;
-  //   this.registry.set("playerHealth", this.player.healthCurrent);
-  //   this.updateTextInUI(this.healthUI);
-  // }
-
-  // resetPlayerTurn() {
-  //   this.playerTurn = true;
-  //   this.playerTurns = this.playerTurnsMax;
-  //   this.updateTextInUI(this.playerTurnsUI);
-  //   this.playerMoveBegin();
-  // }
-  // //#endregion
-  // //#endregion
-
-  //#region OTHER FUNCTIONS
   checkRangeOverlap(range, character) {
     let rangeOverlap;
-
     let playerPos = this.gridEngine.getPosition("player");
     let characterPos = this.gridEngine.getPosition(character);
     let diffX = this.getDifference(characterPos.x, playerPos.x);
@@ -489,45 +282,4 @@ class Scene1 extends Phaser.Scene {
   getDifference(a, b) {
     return Math.abs(a - b);
   }
-
-  // flipSprite(sprite, direction) {
-  //   this.setThisSprite = sprite;
-  //   let flipX;
-
-  //   if (direction == "left") {
-  //     flipX = true;
-  //   }
-  //   if (direction == "right") {
-  //     flipX = false;
-  //   }
-
-  //   this.setThisSprite.flipX = flipX;
-  // }
-
-  getRandomIntFromMax(max) {
-    return Math.floor(Math.random() * max);
-  }
-  //#endregion
-
-  // //#region UI
-  // updateTextInUI(nameUI) {
-  //   if (nameUI == this.playerTurnsUI)
-  //     this.playerTurnsUI.setText('Player turns: ' + this.playerTurns);
-  //   if (nameUI == this.healthUI)
-  //     this.healthUI.setText('Health: ' + this.player.healthCurrent);
-  // }
-
-  // visibilityUI(nameUI, visibility) {
-  //   let visible = visibility;
-  //   this.setThisUI = nameUI;
-
-  //   if (visible) {
-  //     this.setThisUI.visible = true;
-  //   }
-  //   else {
-  //     this.setThisUI.visible = false;
-  //   }
-  // }
-  // //#endregion
-  //#endregion
 }
